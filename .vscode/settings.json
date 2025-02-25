@@ -1,3 +1,4 @@
 {
-    "liveServer.settings.multiRootWorkspaceName": "hobby"
+    "liveServer.settings.multiRootWorkspaceName": "hobby",
+    "livePreview.defaultPreviewPath": "/register.html"
 }
