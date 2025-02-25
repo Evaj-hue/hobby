@@ -1,0 +1,79 @@
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    background: #253529; /* CozyRack background */
+}
+
+/* Form Container */
+.container {
+    max-width: 400px;
+    margin: 50px auto;
+    padding: 20px;
+    border: 2px solid #7A3803; /* Dark brown border */
+    border-radius: 8px;
+    background: white;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+}
+
+/* Input Fields */
+input {
+    width: 100%;
+    padding: 12px;
+    margin-bottom: 10px;
+    border: 1px solid #bbb;
+    border-radius: 5px;
+    box-sizing: border-box;
+    outline: none;
+}
+
+input:focus {
+    border-color: #ED7117; /* Orange focus */
+    box-shadow: 0 0 5px rgba(237, 113, 23, 0.5);
+}
+
+/* Buttons */
+button {
+    width: 100%;
+    padding: 12px;
+    background-color: #ED7117; /* CozyRack Orange */
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background 0.3s ease-in-out;
+}
+
+button:hover {
+    background-color: #7A3803; /* Darker brown hover */
+}
+/* Password Requirements */
+.password-requirements {
+    font-size: 0.9em;
+    color: #666;
+    margin: 10px 0;
+    padding: 10px;
+    border: 1px solid #7A3803; /* Dark brown border */
+    border-radius: 5px;
+    background: #f0f0f0;
+}
+
+.requirement {
+    margin: 5px 0;
+}
+
+.valid {
+    color: green;
+}
+
+.invalid {
+    color: red;
+}
+
+/* Logo Styling */
+.logo {
+    display: block;
+    max-width: 170px; /* Adjust size as needed */
+    margin: 0 auto 15px; /* Center and add space below */
+}
