@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register</title>
+    <link rel="stylesheet" href="css/form.css">
+</head>
+<body>
+    <div class="container">
+        <h2>Register</h2>
+        <form action="register.php" method="POST" onsubmit="return validatePassword()">
+            <input type="text" name="username" placeholder="Username" required>
+            <input type="email" name="email" placeholder="Email" required>
+            <input type="text" name="full_name" placeholder="Full Name" required>
+            <input type="text" name="contact_number" placeholder="Contact Number" required>
+            <input type="password" name="password" id="password" placeholder="Password" 
+                   pattern="(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[!@#$%^&*:;><,.?~`-]).{8,}" 
+                   oninput="checkPasswordRequirements()" required>
+
+            <div class="password-requirements">
+                <div class="requirement invalid" id="length">• At least 8 characters</div>
+                <div class="requirement invalid" id="uppercase">• At least one uppercase letter</div>
+                <div class="requirement invalid" id="lowercase">• At least one lowercase letter</div>
+                <div class="requirement invalid" id="number">• At least one number</div>
+                <div class="requirement invalid" id="special">• At least one special character</div>
+            </div>
+
+            <button type="submit">Register</button>
+        </form>
+        <p>Already have an account? <a href="index.html">Login here</a></p>
+    </div>
+    <script src="scripts/passwordauth.js"></script>
+</body>
+</html>

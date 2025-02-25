@@ -1,37 +1,28 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="LOGIN" content="This where you're going to login to access the CozyRack  system">
-    <link rel="stylesheet" type="text/css" href="css/style.css"/>
-    <title>COZYRACK LOGiN PAGE</title>
-</head>
-<body>
-    <header >
-         <img src="src/page-logo.png">
-            <nav> 
-                 <ul>
-                       <li> <a href="index.php">Home</a> </li>
-                      <li> <a href="#">About</a> </li>
-                      <li> <a href="#">Contact Us</a> </li>
-                 </ul> 
-            </nav> 
-</header> 
-<main> 
-    <div class="form-container">
-        <form action="#">
-            <h1 class="title">COZYRACK LOGIN PAGE</h1>
-            <div class="inputbox"> 
-                 <input type="text" name="username" id="username" placeholder="Username" required>
-            </div>
-            <div class="inputbox">
-                <input type="password" name="password" id="password" placeholder="Password" required>
-            </div>
-            <button type="submit" name="login">Login</button>
-        </form>
-        <p>Not registered? <a href="register.php">Create an account</a></p>
-    </div>
-</main>
-</body>
-</html>
+<?php
+session_start();
+include 'includes/db.php';
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $username = $_POST['username'];
+    $password = $_POST['password'];
+
+    $stmt = $conn->prepare("SELECT * FROM users WHERE username = :username");
+    $stmt->bindParam(':username', $username);
+    $stmt->execute();
+    $user = $stmt->fetch(PDO::FETCH_ASSOC);
+
+    if ($user && password_verify($password, $user['password'])) {
+        $_SESSION['user_id'] = $user['id'];
+        $_SESSION['role'] = $user['role'];
+
+        if ($user['role'] === 'admin') {
+            echo "<script>alert('Login successful! Redirecting to Admin Dashboard.'); window.location.href='admin_dashboard.php';</script>";
+        } else {
+            echo "<script>alert('Login successful! Redirecting to User Dashboard.'); window.location.href='dashboard.php';</script>";
+        }
+    } else {
+        // Show an alert for invalid username or password and go back
+        echo "<script>alert('Invalid username or password! Please try again.'); window.history.back();</script>";
+    }
+}
+?>
