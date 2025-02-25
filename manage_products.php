@@ -186,8 +186,6 @@ table tbody tr:hover {
 
         <h2 class="text-center mb-4">Manage Products</h2>
         <span class="navbar-text me-3">Welcome, <?php echo htmlspecialchars($_SESSION['user']['username']); ?>!</span>
-        
-
         <!-- Add Product Button -->
         <button class="btn btn-primary mb-3" data-bs-toggle="modal" data-bs-target="#addProductModal">Add Product</button>
 
