@@ -129,40 +129,75 @@ try {
     <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
       
     <style>
-        body {
-            background-color: #253529 !important; /* Dark green background */
-            color: white !important; /* White text */
-        }
+        /* Dark Background and White Text */
+body {
+    background-color: #253529 !important;
+    color: white !important;
+}
 
-        .content {
-            margin-left: 260px; /* Space for sidebar */
-            padding: 80px 20px 20px; /* Extra padding on top to avoid overlap */
-        }
+/* Sidebar & Content Spacing */
+.content {
+    margin-left: 260px;
+    padding: 80px 20px 20px;
+}
 
-        table {
-            background-color: #3d4f40 !important; /* Darker green-gray table */
-            color: white !important;
-            border-radius: 10px;
-            overflow: hidden;
-        }
+/* Table Styling */
+table {
+    background-color: #3d4f40 !important; /* Darker green-gray */
+    color: white !important;
+    border-radius: 10px;
+    overflow: hidden;
+    width: 100%;
+    border-collapse: collapse;
+}
 
-        table thead {
-            background-color: #50624e !important;
-        }
+/* Table Header */
+thead {
+    background-color: #50624e !important;
+    font-size: 1rem;
+    font-weight: bold;
+}
 
-        table tbody tr:hover {
-            background-color: #5a6b58 !important;
-        }
+/* Force White Text in Table */
+table th, table td {
+    color: white !important;
+    padding: 15px; /* More padding for better spacing */
+    text-align: center;
+    vertical-align: middle;
+    border: 1px solid #7a8c74;
+}
 
-        .dataTables_wrapper input, .dataTables_wrapper select {
-            background-color: #50624e !important;
-            color: white !important;
-            border: 1px solid #7a8c74 !important;
-        }
+/* Hover Effect */
+table tbody tr:hover {
+    background-color: #5a6b58 !important;
+}
+
+/* DataTables Input & Select */
+.dataTables_wrapper input, .dataTables_wrapper select {
+    background-color: #50624e !important;
+    color: white !important;
+    border: 1px solid #7a8c74 !important;
+    padding: 5px;
+}
+
+/* Responsive Table */
+@media (max-width: 768px) {
+    .content {
+        margin-left: 0;
+        padding: 80px 10px;
+    }
+
+    table {
+        font-size: 0.9rem;
+    }
+}
     </style>
 </head>
 <body>
 <div class="content">
+<?php include '../partials/sidebar.php'; ?>
+<?php include '../partials/navbar.php'; ?>
+
 <?php if (isset($_SESSION['message'])): ?>
     <div class="toast-container position-fixed top-0 end-0 p-3">
         <div id="liveToast" class="toast align-items-center text-bg-<?php echo $_SESSION['msg_type']; ?> border-0" role="alert" aria-live="assertive" aria-atomic="true">
@@ -188,7 +223,7 @@ try {
     </script>
 <?php endif; ?>
 
-<h2 class="text-center mb-4">Manage Products</h2>
+<h2 class="text-center mb-4">Manage Users</h2>
         <span class="navbar-text me-3">Welcome, <?php echo htmlspecialchars($_SESSION['user']['username']); ?>!</span>
         <!-- Add Product Button -->
         <button class="btn btn-primary mb-3" data-bs-toggle="modal" data-bs-target="#addUserModal">Add User</button>
@@ -240,17 +275,34 @@ try {
         </table>
     </div>
     <?php include '../modal/modals.php'; ?>
-
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+                    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    
+    
  
 <!-- Bootstrap JS (for Toast functionality) -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
     
     <script src="../scripts/manage_roles.js"></script>
+    <script>
+    $(document).ready(function() {
+        $('#rolesTable').DataTable({
+            "paging": true,         // Enable pagination
+            "searching": true,      // Enable search functionality
+            "ordering": true,       // Enable sorting by columns
+            "lengthChange": true,   // Enable length change option
+            "pageLength": 10,       // Set default number of entries to show per page
+            "lengthMenu": [10, 25, 50, 100],  // Define the number of entries to show (options in the dropdown)
+            "info": true,           // Show information about number of entries and pages
+            "autoWidth": false,     // Disable auto width for columns
+        });
+    });
+</script>
 
     
 </body>
+
 </html>

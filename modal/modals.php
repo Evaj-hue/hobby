@@ -99,11 +99,11 @@
                         </select>
                     </div>
 
-                    <!-- Updated Shelf: Now a Dropdown Instead of Text Input -->
+                    <!-- Updated Shelf Dropdown -->
                     <div class="mb-3">
                         <label for="shelf" class="form-label">Shelf</label>
                         <select name="shelf" id="shelf" class="form-select" required>
-                            <option value="">Select a shelf</option>
+                            <option value="" disabled selected>Select a shelf</option>
                         </select>
                     </div>
 
@@ -149,11 +149,11 @@
                         </select>
                     </div>
 
-                    <!-- Updated Shelf: Now a Dropdown Instead of Text Input -->
+                    <!-- Updated Shelf Dropdown -->
                     <div class="mb-3">
                         <label for="edit_shelf" class="form-label">Shelf</label>
                         <select name="shelf" id="edit_shelf" class="form-select" required>
-                            <option value="">Select a shelf</option>
+                            <option value="" disabled selected>Select a shelf</option>
                         </select>
                     </div>
 
@@ -187,7 +187,8 @@
         };
 
         // Clear previous options
-        shelfDropdown.innerHTML = "<option value=''>Select a shelf</option>";
+        shelfDropdown.innerHTML = "<option value='' disabled selected>Select a shelf</option>";
+
 
         // Add new options based on selected category
         if (shelves[category]) {

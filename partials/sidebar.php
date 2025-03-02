@@ -1,15 +1,16 @@
 <!-- sidebar.php -->
 <div class="sidebar">
     <div class="sidebar-logo">
-        <img src=src/page-logo.png alt="Company Logo">
+        <img src="../src/page-logo.png" alt="Company Logo">
     </div>
-    <a href="admin_dashboard.php">Dashboard</a>
-    <a href="manage_racks.php">Manage Racks</a>
-    <a href="role_management.php">Role Management</a>
-    <a href="manage_products.php">Manage Products</a>
-    <a href="reports.php">Reports</a>
-    <a href="logout.php">Logout</a>
+    <a href="../admin/admin_dashboard.php">Dashboard</a>
+    <a href="../admin/manage_racks.php">Manage Racks</a>
+    <a href="../admin/manage_roles.php">Role Management</a>
+    <a href="../admin/manage_products.php">Manage Products</a>
+    <a href="../admin/reports.php">Reports</a>
+    <a href="../logout.php">Logout</a>
 </div>
+
 
 <!-- Sidebar CSS -->
 <style>
