@@ -2,6 +2,22 @@
 session_start();
 include 'includes/db.php';
 
+// Fetch the username from the database based on the logged-in user's ID
+if (isset($_SESSION['user_id'])) {
+    $stmt = $conn->prepare("SELECT username FROM users WHERE id = :user_id");
+    $stmt->bindValue(':user_id', $_SESSION['user_id'], PDO::PARAM_INT);
+    $stmt->execute();
+    $user = $stmt->fetch(PDO::FETCH_ASSOC);
+
+    if ($user) {
+        $username = htmlspecialchars($user['username']);
+    } else {
+        $username = "Unknown User"; // Fallback if user ID doesn't exist
+    }
+} else {
+    header("Location: index.html"); // Redirect if not logged in
+    exit();
+}
 // Function to log activity
 function logActivity($userId, $action, $details) {
     global $conn;
@@ -185,7 +201,7 @@ table tbody tr:hover {
        
 
         <h2 class="text-center mb-4">Manage Products</h2>
-        <span class="navbar-text me-3">Welcome, <?php echo htmlspecialchars($_SESSION['user']['username']); ?>!</span>
+        <span class="navbar-text me-3">Welcome, <?php echo $username; ?>!</span>
         <!-- Add Product Button -->
         <button class="btn btn-primary mb-3" data-bs-toggle="modal" data-bs-target="#addProductModal">Add Product</button>
 
