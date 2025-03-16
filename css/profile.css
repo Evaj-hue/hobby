@@ -1,0 +1,242 @@
+/* General Styles */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    background-color: #253529;
+    color: white;
+    font-family: Arial, sans-serif;
+    margin-top: 80px;
+}
+
+
+
+
+
+/* Dashboard Layout */
+.dashboard-container {
+    display: flex;
+    margin-top: 80px;
+}
+
+
+.dashboard-content {
+    margin-left: 270px;
+    padding: 20px;
+    flex-grow: 1;
+}
+
+
+
+
+
+/* Responsive Design */
+@media screen and (max-width: 768px) {
+    .dashboard-container {
+        flex-direction: column;
+    }
+
+    .sidebar {
+        width: 100%;
+        height: auto;
+        position: relative;
+    }
+
+    .dashboard-content {
+        margin-left: 0;
+    }
+
+    .stats {
+        flex-direction: column;
+        align-items: center;
+    }
+}
+
+.form-container {
+    position: relative;
+    max-width: 500px;
+    width: 100%;
+    padding: 20px;
+    color: #fff;
+    background-color: #362532;
+    border-radius: 10px;
+    box-shadow: 0 0 25px 0 black;
+    text-align: center;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    
+}
+
+.form-container h1 {
+    margin-bottom: 20px;
+    font-size: 25px;
+}
+
+.form-group {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 10px;
+    column-gap: 10px;
+}
+
+.inputbox {
+    width: 100%;
+    margin-bottom: 10px;
+}
+
+.inputbox input {
+    width: 100%;
+    padding: 10px;
+    margin-top: 10px;
+    border: 1px solid #ED7117;
+    border-radius: 5px;
+    background: #fff;
+    color: #000;
+    font-size: 16px;
+}
+
+button {
+    width: 70%;
+    padding: 10px;
+    background-color: #ED7117;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+}
+
+button:hover {
+    background-color: #7A3803;
+}
+
+p {
+    margin-top: 15px;
+    font-size: 16px;
+}
+
+p a {
+    color: #ED7117;
+    text-decoration: none;
+}
+
+p a:hover {
+    text-decoration: underline;
+}
+
+
+/* Media Queries for responsiveness */
+@media screen and (max-width: 768px) {
+    header nav ul {
+        flex-direction: row; /* Keep links in a row on smaller screens */
+        justify-content: center; /* Center links in the navbar */
+    }
+
+    header li {
+        margin: 10px 0;
+    }
+
+    .form-container {
+        padding: 20px;
+        width: 90%;
+    }
+
+    .inputbox input {
+        font-size: 14px;
+    }
+
+    button {
+        width: 80%;
+        font-size: 14px;
+    }
+}
+
+@media screen and (max-width: 480px) {
+    header nav ul {
+        flex-direction: column; /* Stack links vertically on very small screens */
+        align-items: center; /* Center the links */
+    }
+
+    header li {
+        margin: 10px 0; /* Add space between stacked links */
+    }
+}
+@media screen and (max-width: 480px) {
+    .form-container {
+        padding: 15px;
+        width: 95%;
+    }
+
+    .inputbox input {
+        font-size: 14px;
+    }
+
+    button {
+        width: 90%;
+        font-size: 14px;
+    }
+
+    p {
+        font-size: 12px;
+    }
+}
+
+
+
+/* Password Validation Message Box */
+#password-message {
+    display: none;
+    background: #362532;  /* Matching your dark theme */
+    color: #ED7117; /* Highlighting errors in your theme color */
+    position: absolute;
+    width: 100%;
+    padding: 10px;
+    margin-top: 5px;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+    font-size: 14px;
+}
+
+#password-message h3 {
+    font-size: 14px;
+    margin-top: 0;
+    text-transform: uppercase;
+    color: #fff; /* White text for contrast */
+}
+
+#password-message p {
+    margin: 5px 0;
+    font-size: 13px;
+}
+
+.valid {
+    color: #7A3803; /* A softer valid color from your theme */
+}
+
+.valid:before {
+    position: relative;
+    left: -10px;
+    content: "✔";
+}
+
+.invalid {
+    color: #ED7117; /* Using your theme's primary color */
+}
+
+.invalid:before {
+    position: relative;
+    left: -10px;
+    content: "✖";
+}
+
+/* Error message style */
+.error-msg {
+    color: #ED7117;
+    font-size: 12px;
+    margin-top: 4px;
+    text-align: left;
+}
