@@ -109,7 +109,7 @@
 
                     <div class="mb-3">
                         <label for="units_in_stock" class="form-label">Units in Stock</label>
-                        <input type="number" name="units_in_stock" id="units_in_stock" class="form-control" required>
+                        <input type="number" name="units_in_stock" id="units_in_stock" class="form-control" required min="1" max="50">
                     </div>
                 </div>
                 <div class="modal-footer">
@@ -147,13 +147,14 @@
                             <option value="sandwiches">Sandwiches</option>
                             <option value="beverages">Beverages</option>
                         </select>
-                    </div>
+                        </div>
 
                     <!-- Updated Shelf Dropdown -->
-                    <div class="mb-3">
+                     <!-- Updated Shelf: Now a Dropdown Instead of Text Input -->
+                     <div class="mb-3">
                         <label for="edit_shelf" class="form-label">Shelf</label>
                         <select name="shelf" id="edit_shelf" class="form-select" required>
-                            <option value="" disabled selected>Select a shelf</option>
+                            <option value="">Select a shelf</option>
                         </select>
                     </div>
 
@@ -200,6 +201,29 @@
             });
         }
     }
+
+        // Function to update shelves when editing
+    function loadEditProduct(product) {
+        document.getElementById('edit_product_id').value = product.id;
+        document.getElementById('edit_product_name').value = product.name;
+        document.getElementById('edit_category').value = product.category;
+        updateShelves('edit_category', 'edit_shelf'); // Ensure the shelves are updated
+        setTimeout(() => {
+            document.getElementById('edit_shelf').value = product.shelf;
+        }, 100); // Add slight delay to ensure options are populated before selection
+        document.getElementById('edit_units_in_stock').value = product.units_in_stock;
+    }
+
+
+
+    document.getElementById('units_in_stock').addEventListener('input', function() {
+    let maxStock = 50; // Set the maximum stock limit
+    if (this.value > maxStock) {
+        alert('You cannot add more than ' + maxStock + ' units.');
+        this.value = maxStock;
+    }
+});
+
 </script>
 
 <!-- Add User Modal -->
@@ -352,6 +376,8 @@
         </div>
     </div>
 </div>
+
+
 
 
 

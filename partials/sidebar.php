@@ -7,7 +7,7 @@
     <a href="../admin/manage_racks.php">Manage Racks</a>
     <a href="../admin/manage_roles.php">Role Management</a>
     <a href="../admin/manage_products.php">Manage Products</a>
-    <a href="../admin/reports.php">Reports</a>
+    <a href="../admin/activity_logs.php">Reports</a>
     <a href="../logout.php">Logout</a>
 </div>
 

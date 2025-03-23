@@ -26,7 +26,10 @@
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
     z-index: 9999;  /* Ensure the navbar stays on top */
 }
-
+/* Lower navbar z-index when modal is open */
+.modal-open .navbar {
+        z-index: 0 !important; /* Pushes navbar behind the modal */
+    }
 /* Navbar link styling */
 .nav-links a {
     color: white;

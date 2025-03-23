@@ -21,12 +21,20 @@ $username = $user ? htmlspecialchars($user['username']) : "Unknown User";
 // Function to log activity
 function logActivity($userId, $action, $details) {
     global $conn;
-    $sql = "INSERT INTO activity_log (user_id, action, details) VALUES (:user_id, :action, :details)";
+
+    // Get the username of the logged-in user
+    $sql = "SELECT username FROM users WHERE id = :user_id";
     $stmt = $conn->prepare($sql);
     $stmt->bindValue(':user_id', $userId, PDO::PARAM_INT);
-    $stmt->bindValue(':action', $action, PDO::PARAM_STR);
-    $stmt->bindValue(':details', $details, PDO::PARAM_STR);
     $stmt->execute();
+    $user = $stmt->fetch(PDO::FETCH_ASSOC);
+    
+    $username = $user ? $user['username'] : '';
+
+    // Insert the activity log with username
+    $sql = "INSERT INTO activity_log (user_id, username, action, details) VALUES (:user_id, :username, :action, :details)";
+    $stmt = $conn->prepare($sql);
+    $stmt->execute([':user_id' => $userId, ':username' => $username, ':action' => $action, ':details' => $details]);
 }
 
 // Handle adding a new product
@@ -283,6 +291,13 @@ table tbody tr:hover {
             });
            
         });
+        $maxStockLimit = 50; // Define max stock limit
+
+         if ($units_in_stock > $maxStockLimit) {
+         $_SESSION['message'] = "Error: Maximum stock limit is $maxStockLimit units.";
+         header('Location: manage_products.php');
+         exit();
+}
     </script>
 </body>
 </html>
