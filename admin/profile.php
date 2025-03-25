@@ -42,12 +42,19 @@ if (!$user) {
 
         <!-- Display success or error messages -->
         <?php
-        if (isset($_SESSION['message'])) {
-            $msg_type = $_SESSION['msg_type'] ?? 'info';
-            echo "<div class='alert alert-$msg_type'>{$_SESSION['message']}</div>";
-            unset($_SESSION['message'], $_SESSION['msg_type']);
-        }
-        ?>
+if (isset($_SESSION['message'])) {
+    $msg_type = $_SESSION['msg_type'] ?? 'info';
+    $message = $_SESSION['message'];
+
+    // Unset the session variables to prevent repeated alerts
+    unset($_SESSION['message'], $_SESSION['msg_type']);
+
+    echo "<script>
+            alert('$message');
+          </script>";
+}
+?>
+
 
 <div class="form-container">
         <h1>Edit Profile</h1>
