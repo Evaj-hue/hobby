@@ -28,7 +28,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             echo "<script>alert('Login successful! Redirecting to Admin Dashboard.'); window.location.href='admin/admin_dashboard.php';</script>";
             exit;
         } else {
-            echo "<script>alert('Login successful! Redirecting to User Dashboard.'); window.location.href='dashboard.php';</script>";
+            echo "<script>alert('Login successful! Redirecting to User Dashboard.'); window.location.href='user/dashboard.php';</script>";
             exit;
         }
     } else {
