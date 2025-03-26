@@ -1,23 +1,40 @@
 <?php
 session_start();
-include 'includes/db.php';
+include '../includes/db.php';
+
+// Check if user is logged in and has the correct role
+if (!isset($_SESSION['user']) || !isset($_SESSION['user']['id']) || !in_array($_SESSION['user']['role'], ['admin', 'moderator'])) {
+    header('Location: ../index.html'); // Redirect to login if unauthorized
+    exit();
+}
+
+// Fetch the username from the database based on the logged-in user's ID
+$userId = $_SESSION['user']['id']; // Corrected session key
+
+$stmt = $conn->prepare("SELECT username FROM users WHERE id = :user_id");
+$stmt->bindValue(':user_id', $userId, PDO::PARAM_INT);
+$stmt->execute();
+$user = $stmt->fetch(PDO::FETCH_ASSOC);
+
+$username = $user ? htmlspecialchars($user['username']) : "Unknown User";
 
 // Function to log activity
 function logActivity($userId, $action, $details) {
     global $conn;
 
-    $sql = "INSERT INTO activity_log (user_id, action, details) VALUES (:user_id, :action, :details)";
+    // Get the username of the logged-in user
+    $sql = "SELECT username FROM users WHERE id = :user_id";
     $stmt = $conn->prepare($sql);
     $stmt->bindValue(':user_id', $userId, PDO::PARAM_INT);
-    $stmt->bindValue(':action', $action, PDO::PARAM_STR);
-    $stmt->bindValue(':details', $details, PDO::PARAM_STR);
     $stmt->execute();
-}
+    $user = $stmt->fetch(PDO::FETCH_ASSOC);
+    
+    $username = $user ? $user['username'] : '';
 
-// Check if the user is logged in and has a valid role
-if (!isset($_SESSION['user_id']) || !in_array($_SESSION['role'], ['admin', 'moderator'])) {
-    header('Location: index.html');
-    exit();
+    // Insert the activity log with username
+    $sql = "INSERT INTO activity_log (user_id, username, action, details) VALUES (:user_id, :username, :action, :details)";
+    $stmt = $conn->prepare($sql);
+    $stmt->execute([':user_id' => $userId, ':username' => $username, ':action' => $action, ':details' => $details]);
 }
 
 // Handle adding a new product
@@ -27,7 +44,6 @@ if (isset($_POST['add_product'])) {
     $shelf = $_POST['shelf'];
     $units_in_stock = $_POST['units_in_stock'];
 
-    // Insert the new product into the database
     $sql = "INSERT INTO products (product_name, category, shelf, units_in_stock) VALUES (:product_name, :category, :shelf, :units_in_stock)";
     $stmt = $conn->prepare($sql);
     $stmt->bindValue(':product_name', $product_name);
@@ -36,8 +52,6 @@ if (isset($_POST['add_product'])) {
     $stmt->bindValue(':units_in_stock', $units_in_stock, PDO::PARAM_INT);
     $stmt->execute();
 
-    // Log activity
-    $userId = $_SESSION['user_id'];
     logActivity($userId, "added product", "Product: $product_name, Category: $category, Shelf: $shelf, Stock: $units_in_stock");
 
     $_SESSION['message'] = 'Product added successfully!';
@@ -49,18 +63,16 @@ if (isset($_POST['add_product'])) {
 if (isset($_POST['remove_product'])) {
     $product_id = (int)$_POST['product_id'];
 
-    // Get the product name before removing it (for logging purposes)
     $stmt = $conn->prepare("SELECT product_name FROM products WHERE id = :product_id");
     $stmt->bindValue(':product_id', $product_id, PDO::PARAM_INT);
     $stmt->execute();
     $product = $stmt->fetch(PDO::FETCH_ASSOC);
 
-    // Delete product
     $stmt = $conn->prepare("DELETE FROM products WHERE id = :product_id");
     $stmt->bindValue(':product_id', $product_id, PDO::PARAM_INT);
 
     if ($stmt->execute()) {
-        logActivity($_SESSION['user_id'], "removed product", "Product: " . $product['product_name']);
+        logActivity($userId, "removed product", "Product: " . $product['product_name']);
         $_SESSION['message'] = 'Product removed successfully!';
     } else {
         $_SESSION['message'] = 'Error removing product.';
@@ -86,7 +98,7 @@ if (isset($_POST['update_product'])) {
     $stmt->bindValue(':product_id', $product_id, PDO::PARAM_INT);
     $stmt->execute();
 
-    logActivity($_SESSION['user_id'], "updated product", "Product ID: $product_id, New Name: $product_name, New Category: $category, New Shelf: $shelf, New Stock: $units_in_stock");
+    logActivity($userId, "updated product", "Product ID: $product_id, New Name: $product_name, New Category: $category, New Shelf: $shelf, New Stock: $units_in_stock");
 
     $_SESSION['message'] = 'Product updated successfully!';
     header('Location: manage_products.php');
@@ -112,8 +124,8 @@ if (!$result) {
    <!-- Bootstrap CSS -->
    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css">
     <!-- DataTables CSS -->
-    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
-    <style>
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css"> 
+<style>
         /* Dark Background and White Text */
 body {
     background-color: #253529 !important;
@@ -179,13 +191,28 @@ table tbody tr:hover {
     </style>
 </head>
 <body>
+       <!-- Toast Notification -->
+       <div class="toast-container position-fixed top-0 end-0 p-3">
+        <div id="liveToast" class="toast text-white bg-success border-0" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="d-flex">
+                <div class="toast-body">
+                    <?php if (isset($_SESSION['message'])) {
+                        echo $_SESSION['message'];
+                        unset($_SESSION['message']); // Clear message after displaying it
+                    } ?>
+                </div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+        </div>
+    </div>
 <div class="content">
-<?php include("partials/sidebar.php"); ?> <!-- Sidebar included -->
-<?php include("partials/navbar.php"); ?> <!-- Navbar included -->
+<?php include("../partials/sidebar.php"); ?> 
+<?php include("../partials/navbar.php"); ?> 
+
        
 
         <h2 class="text-center mb-4">Manage Products</h2>
-        <span class="navbar-text me-3">Welcome, <?php echo htmlspecialchars($_SESSION['user']['username']); ?>!</span>
+        <span class="navbar-text me-3">Welcome, <?php echo $username; ?>!</span>
         <!-- Add Product Button -->
         <button class="btn btn-primary mb-3" data-bs-toggle="modal" data-bs-target="#addProductModal">Add Product</button>
 
@@ -228,14 +255,23 @@ table tbody tr:hover {
         </table>
     </div>
 
-    <?php include 'modal/modals.php'; ?>
+    <?php include '../modal/modals.php'; ?>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://code.jquery.com/jquery-3.5.1.js"></script>
     <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+    <!-- Bootstrap JS (for Toast functionality) -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         $(document).ready(function() {
             $('#productsTable').DataTable();
+
+            var toastEl = document.getElementById('liveToast');
+    if (toastEl && toastEl.querySelector('.toast-body').textContent.trim() !== '') {
+        var toast = new bootstrap.Toast(toastEl);
+        toast.show();
+    }
+
 
             // Populate the edit modal with product data
             $('#editProductModal').on('show.bs.modal', function(event) {
@@ -253,7 +289,15 @@ table tbody tr:hover {
                 modal.find('#edit_shelf').val(shelf);
                 modal.find('#edit_units_in_stock').val(stock);
             });
+           
         });
+        $maxStockLimit = 50; // Define max stock limit
+
+         if ($units_in_stock > $maxStockLimit) {
+         $_SESSION['message'] = "Error: Maximum stock limit is $maxStockLimit units.";
+         header('Location: manage_products.php');
+         exit();
+}
     </script>
 </body>
 </html>
