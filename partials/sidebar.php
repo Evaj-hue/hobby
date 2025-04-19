@@ -4,7 +4,7 @@
         <img src="../src/page-logo.png" alt="Company Logo">
     </div>
     <a href="../admin/admin_dashboard.php">Dashboard</a>
-    <a href="../admin/manage_racks.php">Manage Racks</a>
+    <a href="../rack/rack_dashboard.php">Manage Racks</a>
     <a href="../admin/manage_roles.php">Role Management</a>
     <a href="../admin/manage_products.php">Manage Products</a>
     <a href="../admin/activity_logs.php">Reports</a>
