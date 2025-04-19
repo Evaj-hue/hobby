@@ -39,7 +39,7 @@ $dbname = "user_management";
 <body>
 <div class="container">
   <div class="d-flex justify-content-between align-items-center mb-4">
-    <a href="index.php" class="btn btn-outline-secondary">
+    <a href="rack_dashboard.php" class="btn btn-outline-secondary">
       🔙 Return to Racks
     </a>
     <h2 class="m-0">⚠️ All Unrecognized Weight Warnings</h2>

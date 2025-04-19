@@ -72,7 +72,7 @@
   </style>
 </head>
 <body>
-<?php include("../partials/sidebar.php"); ?> 
+<?php include("../partials/user_sidebar.php"); ?> <!-- Sidebar included -->
 
   <h2 class="text-center mt-4">📦 CozyRack - Real-Time Load Cell Monitor</h2>
 
