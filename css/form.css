@@ -48,6 +48,7 @@ button {
 button:hover {
     background-color: #7A3803; /* Darker brown hover */
 }
+
 /* Password Requirements */
 .password-requirements {
     font-size: 0.9em;
@@ -76,4 +77,29 @@ button:hover {
     display: block;
     max-width: 170px; /* Adjust size as needed */
     margin: 0 auto 15px; /* Center and add space below */
+}
+
+/* Phone Input Styling */
+.phone-input {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+
+.phone-input select {
+    width: 30%;
+    padding: 12px;
+    border: 1px solid #bbb;
+    border-radius: 5px;
+    box-sizing: border-box;
+    outline: none;
+}
+
+phone-input select:focus {
+    border-color: #ED7117; /* Orange focus */
+    box-shadow: 0 0 5px rgba(237, 113, 23, 0.5);
+}
+
+.phone-input input {
+    width: 70%;
 }

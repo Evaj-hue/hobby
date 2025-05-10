@@ -5,7 +5,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $username = $_POST['username'];
     $email = $_POST['email'];
     $full_name = $_POST['full_name'];
-    $contact_number = $_POST['contact_number'];
+    $country_code = $_POST['country_code'];
+    $contact_number = $country_code . $_POST['contact_number'];
 
     // Validate password with regex pattern
     if (!preg_match('/^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[!@#$%^&*:;<>,.?~`-]).{8,}$/', $_POST['password'])) {
