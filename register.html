@@ -14,16 +14,16 @@
             <input type="email" name="email" placeholder="Email" required>
             <input type="text" name="full_name" placeholder="Full Name" required>
             <div class="phone-input">
-                <select name="country_code" required>
-                    <option value="+1">+1 (USA)</option>
-                    <option value="+44">+44 (UK)</option>
-                    <option value="+91">+91 (India)</option>
-                    <option value="+61">+61 (Australia)</option>
-                    <option value="+81">+81 (Japan)</option>
-                    <option value="+63">+63 (PH)</option>
+                <select name="country_code" id="country_code" required onchange="updateContactNumber()">
+                    <option value="+1" data-length="11">+1 (USA)</option>
+                    <option value="+44" data-length="11">+44 (UK)</option>
+                    <option value="+91" data-length="11">+91 (India)</option>
+                    <option value="+61" data-length="11">+61 (Australia)</option>
+                    <option value="+81" data-length="11">+81 (Japan)</option>
+                    <option value="+63" data-length="11">+63 (PH)</option>
                 </select>
-                <input type="text" name="contact_number" placeholder="Contact Number" 
-                       pattern="\d+" title="Only numbers are allowed" maxlength="15" required>
+                <input type="text" name="contact_number" id="contact_number" placeholder="Contact Number" 
+                       pattern="\d+" title="Only numbers are allowed" maxlength="11" required>
             </div>
             <input type="password" name="password" id="password" placeholder="Password" 
                    pattern="(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[!@#$%^&*:;><,.?~`-]).{8,}" 
@@ -42,5 +42,6 @@
         <p>Already have an account? <a href="index.html">Login here</a></p>
     </div>
     <script src="scripts/passwordauth.js"></script>
+    <script src="scripts/contactnumber.js"></script>
 </body>
 </html>
