@@ -5,113 +5,85 @@ if (!isset($_SESSION['user'])) {
     exit();
 }
 
+include '../includes/db.php';
+
+// Fetch merch products grouped by category
+$sql = "SELECT * FROM merch_products ORDER BY category, product_name";
+$result = $conn->query($sql);
+
+$productsByCategory = [];
+while ($row = $result->fetch(PDO::FETCH_ASSOC)) {
+    $productsByCategory[$row['category']][] = $row;
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" type="text/css" href="/idealcozydesign/css/style.css"/>
-    <link rel="stylesheet" type="text/css" href="/idealcozydesign/css/cards.css"/>
-    <title>User Dashboard</title>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    
-    <!-- DataTables CSS -->
-    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
-    
+    <link rel="stylesheet" href="/idealcozydesign/css/style.css"/>
+    <link rel="stylesheet" href="/idealcozydesign/css/cards.css"/>
+    <title>User Dashboard</title>
     <style>
-        body {
-            background-color: #253529 !important; /* Your original dark theme */
+        .product-card {
+            background-color: #362532;
             color: white;
-        }
-
-        /* Notification Card Styling */
-        .notification-card {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            background: #28a745;
-            color: white;
-            padding: 15px;
             border-radius: 8px;
-            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
-            display: none;
-            z-index: 1000;
-            transition: all 0.5s ease-in-out;
-        }
-        .notification-card.show {
-            display: block;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            padding: 15px;
+            margin: 15px;
+            text-align: center;
+            transition: transform 0.3s ease;
         }
 
-        /* Compact Activity Logs Card */
-        .log-card {
-            max-width: 18rem;
-            margin-bottom: 20px;
+        .product-card img {
+            max-width: 100%;
+            border-radius: 5px;
         }
 
-        /* Divider */
-        .divider {
-            border-bottom: 2px solid #7A3803;
-            margin: 20px 0;
+        .product-card:hover {
+            transform: scale(1.05);
         }
-        
+
+        .category-header {
+            color: #ED7117;
+            font-size: 24px;
+            font-weight: bold;
+            margin-top: 20px;
+        }
     </style>
 </head>
 <body>
-<?php include("../partials/user_navbar.php"); ?> <!-- Sidebar included -->
-    <?php include("../partials/user_sidebar.php"); ?> <!-- Sidebar included -->
-    <!-- DASHBOARD CONTAINER -->
-<div class="dashboard-container">
-    <div class="dashboard-content">
+    <?php include("../partials/user_navbar.php"); ?>
+    <?php include("../partials/user_sidebar.php"); ?>
 
-        <!-- Logs Section -->
-        <h2>Recent Activity</h2>
-        <div id="logs-container"></div>
-
-        <!-- Divider (Separates Activity Logs from Stock Levels) -->
-        <div class="divider"></div>
-
-        <!-- Product Stock Levels -->
-        <h1>Product Stock Levels</h1>
-        <div id="charts-container" class="charts-grid"></div>
-
-        <!-- Another Divider (Below Stock Levels) -->
-        <div class="divider"></div>
-
-        <!-- Notification Card -->
-        <div id="notification-card" class="notification-card">
-        <strong><i class="fas fa-bell"></i> New Activity:</strong>
-            <p id="notification-text"></p>
+    <div class="dashboard-container">
+        <div class="dashboard-content">
+            <h1 class="text-center">Merch Products</h1>
+            <?php if (!empty($productsByCategory)): ?>
+                <?php foreach ($productsByCategory as $category => $products): ?>
+                    <div>
+                        <h2 class="category-header"><?= htmlspecialchars($category); ?></h2>
+                        <div class="d-flex flex-wrap justify-content-center">
+                            <?php foreach ($products as $product): ?>
+                                <div class="product-card">
+                                    <img src="<?= htmlspecialchars($product['image']); ?>" alt="<?= htmlspecialchars($product['product_name']); ?>">
+                                    <h3><?= htmlspecialchars($product['product_name']); ?></h3>
+                                    <p><?= htmlspecialchars($product['description']); ?></p>
+                                    <p>Price: $<?= htmlspecialchars($product['price']); ?></p>
+                                    <p>Stock: <?= htmlspecialchars($product['stock_quantity']); ?></p>
+                                </div>
+                            <?php endforeach; ?>
+                        </div>
+                    </div>
+                <?php endforeach; ?>
+            <?php else: ?>
+                <p class="text-center">No products available.</p>
+            <?php endif; ?>
         </div>
-    </div>  
-</div>
-<!-- Scripts -->
-<script src="../scripts/fetch_charts.js"></script>
-<script src="../scripts/fetch_logs.js"></script>
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    </div>
 
-<script>
-// Fetch Log Count for Activity Logs Card
-function fetchLogCount() {
-    fetch("admin/get_logs.php")
-    .then(response => response.json())
-        .then(logs => {
-            if (!logs || logs.length === 0 || logs.message) {
-                document.getElementById("log-count").textContent = "0 Logs";
-                return;
-            }
-            document.getElementById("log-count").textContent = `${logs.length} Logs`;
-        })
-        .catch(error => console.error("Error fetching logs:", error));
-}
-
-// Fetch log count on page load and update every 10 seconds
-fetchLogCount();
-setInterval(fetchLogCount, 10000);
-
-</script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
