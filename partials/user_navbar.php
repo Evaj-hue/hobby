@@ -3,7 +3,7 @@
     <h2>CozyRack Staff(s) Dashboard</h2>
     <div class="nav-links">
         <a href="edit_profile.php">Profile</a>
-        <a href="logout.php">Logout</a>
+        <a href="../logout.php">Logout</a>
     </div>
 </div>
 
