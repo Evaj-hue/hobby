@@ -87,92 +87,97 @@ while ($row = $result->fetch(PDO::FETCH_ASSOC)) {
     <link rel="stylesheet" href="/idealcozydesign/css/cards.css"/>
     <title>User Dashboard</title>
     <style>
-    .dashboard-container {
-        padding: 20px;
-    }
+        .dashboard-container {
+            padding: 20px;
+        }
 
-    .cards-container {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 8px;
-        justify-content: flex-start;
-    }
+        .cards-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 16px;
+            justify-content: flex-start;
+        }
 
-    .product-card {
-        background-color: #362532;
-        color: white;
-        border-radius: 8px;
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-        padding: 10px;
-        text-align: center;
-        flex: 1 1 calc(20% - 16px); /* Adjust to fit 5 cards in a row */
-        max-width: calc(20% - 16px); /* Same as flex-basis */
-        margin: 10px;
-        transition: transform 0.3s ease, box-shadow 0.3s ease;
-    }
-
-    .product-card img {
-        width: 100%;
-        height: 200px;
-        object-fit: cover;
-        border-radius: 5px;
-    }
-
-    .product-card h3 {
-        font-size: 1.2rem;
-        margin: 10px 0;
-        color: #ED7117;
-    }
-
-    .product-card p {
-        font-size: 0.9rem;
-        margin: 5px 0;
-    }
-
-    .product-card:hover {
-        transform: scale(1.05);
-        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
-    }
-
-    .category-header {
-        color: #ED7117;
-        font-size: 1.8rem;
-        font-weight: bold;
-        margin: 20px 0 10px;
-        text-align: center;
-        text-transform: uppercase;
-    }
-
-    /* Responsive Adjustments */
-    @media screen and (max-width: 1200px) {
         .product-card {
-            flex: 1 1 calc(25% - 16px); /* Adjust to fit 4 cards in a row */
-            max-width: calc(25% - 16px);
-        }
-    }
-
-    @media screen and (max-width: 768px) {
-        .product-card {
-            flex: 1 1 calc(50% - 16px); /* Adjust to fit 2 cards in a row */
-            max-width: calc(50% - 16px);
-        }
-
-        .category-header {
-            font-size: 1.3rem;
-        }
-    }
-
-    @media screen and (max-width: 480px) {
-        .product-card {
-            flex: 1 1 100%; /* Adjust to fit 1 card per row */
-            max-width: 100%;
+            background-color: #362532;
+            color: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            padding: 15px;
+            text-align: center;
+            flex: 1 1 calc(20% - 16px); /* Better fit for 5 cards per row */
+            max-width: calc(20% - 16px);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
         }
 
-        .category-header {
+        .product-card img {
+            width: 100%;
+            height: 180px;
+            object-fit: cover;
+            border-radius: 5px;
+            margin-bottom: 10px;
+        }
+
+        .product-card h3 {
             font-size: 1.2rem;
+            margin: 10px 0;
+            color: #ED7117;
         }
-    }
-</style>
+
+        .product-card p {
+            font-size: 0.9rem;
+            margin: 5px 0;
+        }
+
+        .product-card:hover {
+            transform: scale(1.05);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+        }
+
+        .category-header {
+            color: #ED7117;
+            font-size: 1.8rem;
+            font-weight: bold;
+            margin-top: 30px;
+            margin-bottom: 10px;
+            text-align: center;
+            text-transform: uppercase;
+        }
+
+        .category-divider {
+            height: 2px;
+            background-color: #ED7117;
+            margin: 20px 0;
+            border-radius: 1px;
+        }
+
+        /* Responsive Adjustments */
+        @media screen and (max-width: 1200px) {
+            .product-card {
+                flex: 1 1 calc(25% - 16px); /* 4 cards per row */
+            }
+        }
+
+        @media screen and (max-width: 768px) {
+            .product-card {
+                flex: 1 1 calc(50% - 16px); /* 2 cards per row */
+            }
+
+            .category-header {
+                font-size: 1.5rem;
+            }
+        }
+
+        @media screen and (max-width: 480px) {
+            .product-card {
+                flex: 1 1 100%; /* 1 card per row */
+            }
+
+            .category-header {
+                font-size: 1.3rem;
+            }
+        }
+    </style>
 </head>
 <body>
     <?php include("../partials/user_navbar.php"); ?>
@@ -185,6 +190,7 @@ while ($row = $result->fetch(PDO::FETCH_ASSOC)) {
                 <?php foreach ($productsByCategory as $category => $products): ?>
                     <div>
                         <h2 class="category-header"><?= htmlspecialchars($category); ?></h2>
+                        <div class="category-divider"></div>
                         <div class="cards-container">
                             <?php foreach ($products as $product): ?>
                                 <div class="product-card">
