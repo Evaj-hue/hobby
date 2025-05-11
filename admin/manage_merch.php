@@ -194,6 +194,11 @@ $result = $conn->query($sql);
                 font-size: 0.9rem;
             }
         }
+
+        /* Toast Notification Styling */
+        .toast-container {
+            z-index: 1050; /* Ensure toast notifications are in front of the navbar */
+        }
     </style>
 </head>
 <body>
