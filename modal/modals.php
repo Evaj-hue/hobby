@@ -377,7 +377,105 @@
     </div>
 </div>
 
+<!-- Add Merch Modal -->
+<div class="modal fade" id="addMerchModal" tabindex="-1" aria-labelledby="addMerchModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form action="manage_merch.php" method="POST" enctype="multipart/form-data">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addMerchModalLabel">Add New Merch</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="product_name" class="form-label">Product Name</label>
+                        <input type="text" name="product_name" id="product_name" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="description" class="form-label">Description</label>
+                        <textarea name="description" id="description" class="form-control" rows="3"></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label for="price" class="form-label">Price</label>
+                        <input type="number" name="price" id="price" class="form-control" step="0.01" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="stock_quantity" class="form-label">Stock Quantity</label>
+                        <input type="number" name="stock_quantity" id="stock_quantity" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="category" class="form-label">Category</label>
+                        <select name="category" id="category" class="form-select" required>
+                            <option value="Tote Bags">Tote Bags</option>
+                            <option value="Coffee Cups">Coffee Cups</option>
+                            <option value="Posters">Posters</option>
+                            <option value="Coasters">Coasters</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="image" class="form-label">Product Image</label>
+                        <input type="file" name="image" id="image" class="form-control" accept="image/*" required>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="submit" name="add_merch" class="btn btn-primary">Add Merch</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
 
+<!-- Edit Merch Modal -->
+<div class="modal fade" id="editMerchModal" tabindex="-1" aria-labelledby="editMerchModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form action="manage_merch.php" method="POST" enctype="multipart/form-data">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="editMerchModalLabel">Edit Merch</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" name="product_id" id="edit_product_id">
+                    <div class="mb-3">
+                        <label for="edit_product_name" class="form-label">Product Name</label>
+                        <input type="text" name="product_name" id="edit_product_name" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="edit_description" class="form-label">Description</label>
+                        <textarea name="description" id="edit_description" class="form-control" rows="3"></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label for="edit_price" class="form-label">Price</label>
+                        <input type="number" name="price" id="edit_price" class="form-control" step="0.01" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="edit_stock_quantity" class="form-label">Stock Quantity</label>
+                        <input type="number" name="stock_quantity" id="edit_stock_quantity" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="edit_category" class="form-label">Category</label>
+                        <select name="category" id="edit_category" class="form-select" required>
+                            <option value="Tote Bags">Tote Bags</option>
+                            <option value="Coffee Cups">Coffee Cups</option>
+                            <option value="Posters">Posters</option>
+                            <option value="Coasters">Coasters</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="edit_image" class="form-label">Product Image</label>
+                        <input type="file" name="image" id="edit_image" class="form-control" accept="image/*">
+                        <small class="form-text text-muted">Leave blank to keep the current image.</small>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="submit" name="edit_merch" class="btn btn-primary">Update Merch</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
 
 
 
