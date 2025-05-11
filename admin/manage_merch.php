@@ -28,6 +28,58 @@ function logActivity($userId, $action, $details) {
     ]);
 }
 
+// Function to resize an image
+function resizeImage($source, $destination, $width, $height) {
+    $imageInfo = getimagesize($source);
+    $mime = $imageInfo['mime'];
+
+    // Create an image resource based on mime type
+    switch ($mime) {
+        case 'image/jpeg':
+            $image = imagecreatefromjpeg($source);
+            break;
+        case 'image/png':
+            $image = imagecreatefrompng($source);
+            break;
+        case 'image/gif':
+            $image = imagecreatefromgif($source);
+            break;
+        default:
+            throw new Exception('Unsupported image type.');
+    }
+
+    // Create a blank canvas for the resized image
+    $resizedImage = imagecreatetruecolor($width, $height);
+
+    // Preserve transparency for PNG and GIF
+    if ($mime === 'image/png' || $mime === 'image/gif') {
+        imagealphablending($resizedImage, false);
+        imagesavealpha($resizedImage, true);
+        $transparent = imagecolorallocatealpha($resizedImage, 255, 255, 255, 127);
+        imagefilledrectangle($resizedImage, 0, 0, $width, $height, $transparent);
+    }
+
+    // Resize the image
+    imagecopyresampled($resizedImage, $image, 0, 0, 0, 0, $width, $height, imagesx($image), imagesy($image));
+
+    // Save the resized image
+    switch ($mime) {
+        case 'image/jpeg':
+            imagejpeg($resizedImage, $destination, 90);
+            break;
+        case 'image/png':
+            imagepng($resizedImage, $destination);
+            break;
+        case 'image/gif':
+            imagegif($resizedImage, $destination);
+            break;
+    }
+
+    // Free memory
+    imagedestroy($image);
+    imagedestroy($resizedImage);
+}
+
 // Handle adding a new merch product
 if (isset($_POST['add_merch'])) {
     $product_name = $_POST['product_name'];
@@ -39,7 +91,9 @@ if (isset($_POST['add_merch'])) {
     // Handle file upload
     $image = $_FILES['image'];
     $image_path = "../product_image/" . basename($image['name']);
-    move_uploaded_file($image['tmp_name'], $image_path);
+
+    // Resize the image before saving
+    resizeImage($image['tmp_name'], $image_path, 200, 200);
 
     $sql = "INSERT INTO merch_products (product_name, description, price, stock_quantity, category, image) VALUES (:product_name, :description, :price, :stock_quantity, :category, :image)";
     $stmt = $conn->prepare($sql);
@@ -71,7 +125,9 @@ if (isset($_POST['edit_merch'])) {
     if (!empty($_FILES['image']['name'])) {
         $image = $_FILES['image'];
         $image_path = "../product_image/" . basename($image['name']);
-        move_uploaded_file($image['tmp_name'], $image_path);
+
+        // Resize the image before saving
+        resizeImage($image['tmp_name'], $image_path, 200, 200);
 
         $sql = "UPDATE merch_products SET product_name = :product_name, description = :description, price = :price, stock_quantity = :stock_quantity, category = :category, image = :image WHERE product_id = :product_id";
         $stmt = $conn->prepare($sql);

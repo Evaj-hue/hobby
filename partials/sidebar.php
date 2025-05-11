@@ -12,9 +12,9 @@
     <a href="../logout.php">Logout</a>
 </div>
 
-
 <!-- Sidebar CSS -->
 <style>
+    /* Sidebar Styling */
     .sidebar {
         width: 200px;
         background-color: #362532; /* CozyRack sidebar */
@@ -25,6 +25,8 @@
         position: fixed;
         top: 0;
         left: 0;
+        transition: transform 0.3s ease; /* Smooth transition for responsiveness */
+        z-index: 1020; /* Ensure sidebar stays below navbar */
     }
 
     .sidebar-logo {
@@ -53,5 +55,20 @@
 
     .sidebar a:hover, .sidebar a.active {
         background: #ED7117; /* Highlight */
+    }
+
+    /* Responsive Adjustments */
+    @media screen and (max-width: 768px) {
+        .sidebar {
+            transform: translateX(-100%); /* Hide sidebar off-canvas */
+        }
+
+        .sidebar.open {
+            transform: translateX(0); /* Show sidebar */
+        }
+
+        .sidebar a {
+            font-size: 14px; /* Adjust link size for smaller screens */
+        }
     }
 </style>

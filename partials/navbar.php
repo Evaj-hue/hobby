@@ -23,7 +23,8 @@
         top: 0;
         left: 200px; /* Offset to align with sidebar */
         box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-        z-index: 1030; /* Ensure navbar stays below toast notifications */
+        z-index: 1030; /* Ensure navbar stays above other elements */
+        transition: left 0.3s ease; /* Smooth transition for responsiveness */
     }
 
     /* Navbar link styling */
@@ -41,5 +42,22 @@
     .content {
         margin-top: 60px; /* Same height as the navbar */
         padding: 20px; /* Add padding to the content area */
+    }
+
+    /* Responsive Adjustments */
+    @media screen and (max-width: 768px) {
+        .navbar {
+            width: 100%; /* Full width */
+            left: 0; /* Align navbar with hidden sidebar */
+        }
+
+        .nav-links {
+            display: flex;
+            flex-wrap: wrap; /* Ensure links wrap on smaller screens */
+        }
+
+        .nav-links a {
+            margin-left: 10px; /* Reduce space for smaller screens */
+        }
     }
 </style>
