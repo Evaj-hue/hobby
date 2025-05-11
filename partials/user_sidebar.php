@@ -21,6 +21,7 @@
         position: fixed;
         top: 0;
         left: 0;
+        transition: transform 0.3s ease; /* Smooth transition for responsiveness */
     }
 
     .sidebar-logo {
@@ -49,5 +50,16 @@
 
     .sidebar a:hover, .sidebar a.active {
         background: #ED7117; /* Highlight */
+    }
+
+    /* Responsive Adjustments */
+    @media screen and (max-width: 768px) {
+        .sidebar {
+            transform: translateX(-100%); /* Hide sidebar off-canvas */
+        }
+
+        .sidebar.open {
+            transform: translateX(0); /* Show sidebar */
+        }
     }
 </style>

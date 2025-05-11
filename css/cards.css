@@ -1,70 +1,82 @@
-/* Card Container */
-.cards-container {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 20px;
-    justify-content: space-evenly; /* Distribute cards evenly with spacing */
-    margin-top: 20px;
-}
+    /* Card Container */
+    .cards-container {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px; /* Reduce gap for tighter spacing */
+        justify-content: flex-start; /* Align cards to the start */
+        margin-top: 15px;
+    }
 
-/* Product Card Styling */
-.product-card {
-    background-color: #362532;
-    color: white;
-    border-radius: 8px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-    padding: 15px;
-    text-align: center;
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
-    flex: 1 1 280px; /* Flex-grow: 1, Flex-shrink: 1, Flex-basis: 280px */
-    max-width: 300px; /* Ensure cards do not get too large */
-    margin: 10px; /* Add spacing between cards */
-}
-
-/* Product Image Styling */
-.product-card img {
-    width: 100%; /* Ensure images are responsive */
-    max-height: 200px; /* Limit the height for consistent layout */
-    object-fit: cover; /* Ensure the image scales correctly without distortion */
-    border-radius: 5px;
-    margin-bottom: 10px;
-}
-
-/* Product Card Content */
-.product-card h3 {
-    font-size: 1.5rem;
-    margin: 10px 0;
-    color: #ED7117;
-}
-
-.product-card p {
-    font-size: 1rem;
-    margin: 5px 0;
-}
-
-.product-card:hover {
-    transform: scale(1.05);
-    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
-}
-
-/* Category Header */
-.category-header {
-    color: #ED7117;
-    font-size: 2rem;
-    font-weight: bold;
-    margin: 30px 0 20px;
-    text-align: center;
-    text-transform: uppercase;
-}
-
-/* Responsive Adjustments */
-@media screen and (max-width: 768px) {
+    /* Product Card Styling */
     .product-card {
-        flex: 1 1 100%; /* Ensure cards take full width on smaller screens */
-        margin: 10px 0;
+        background-color: #362532;
+        color: white;
+        border-radius: 8px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        padding: 10px; /* Reduce padding for compact design */
+        text-align: center;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        flex: 1 1 150px; /* Reduce flex-basis for smaller cards */
+        max-width: 180px; /* Adjust max-width for tighter layout */
+        margin: 5px; /* Reduce margin for tighter spacing */
     }
 
-    .category-header {
-        font-size: 1.5rem;
+    /* Product Image Styling */
+    .product-card img {
+        width: 100%; /* Ensure images are responsive */
+        max-height: 120px; /* Reduce max-height for smaller images */
+        object-fit: cover; /* Ensure the image scales correctly without distortion */
+        border-radius: 5px;
+        margin-bottom: 8px; /* Adjust spacing below the image */
     }
-}
+
+    /* Product Card Content */
+    .product-card h3 {
+        font-size: 1.2rem; /* Reduce font size for product names */
+        margin: 8px 0;
+        color: #ED7117;
+    }
+
+    .product-card p {
+        font-size: 0.9rem; /* Reduce font size for descriptions and details */
+        margin: 4px 0;
+    }
+
+    /* Product Card Hover Effect */
+    .product-card:hover {
+        transform: scale(1.05);
+        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+    }
+
+    /* Category Header */
+    .category-header {
+        color: #ED7117;
+        font-size: 1.8rem; /* Slightly reduce font size */
+        font-weight: bold;
+        margin: 25px 0 15px;
+        text-align: center;
+        text-transform: uppercase;
+    }
+
+    /* Responsive Adjustments */
+    @media screen and (max-width: 768px) {
+        .product-card {
+            flex: 1 1 calc(50% - 10px); /* Adjust to two cards per row on smaller screens */
+            margin: 8px 0;
+        }
+
+        .category-header {
+            font-size: 1.3rem; /* Reduce font size for smaller screens */
+        }
+    }
+
+    @media screen and (max-width: 480px) {
+        .product-card {
+            flex: 1 1 100%; /* Display one card per row on very small screens */
+            margin: 8px 0;
+        }
+
+        .category-header {
+            font-size: 1.2rem; /* Further reduce category header size */
+        }
+    }
