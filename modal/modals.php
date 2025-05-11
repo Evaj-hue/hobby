@@ -456,10 +456,10 @@
                     <div class="mb-3">
                         <label for="edit_category" class="form-label">Category</label>
                         <select name="category" id="edit_category" class="form-select" required>
-                            <option value="Tote Bags">Tote Bags</option>
-                            <option value="Coffee Cups">Coffee Cups</option>
-                            <option value="Posters">Posters</option>
-                            <option value="Coasters">Coasters</option>
+                            <option value="apparels">Apparels</option>
+                            <option value="coffee Cups">Coffee Cups</option>
+                            <option value="posters">Posters</option>
+                            <option value="accesories">Accessories</option>
                         </select>
                     </div>
                     <div class="mb-3">
