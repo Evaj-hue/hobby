@@ -102,4 +102,14 @@ phone-input select:focus {
 
 .phone-input input {
     width: 70%;
+    padding: 12px;
+    border: 1px solid #bbb;
+    border-radius: 5px;
+    box-sizing: border-box;
+    outline: none;
+}
+
+.phone-input input::placeholder {
+    color: #999;
+    font-size: 0.9em;
 }
