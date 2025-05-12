@@ -1,82 +1,114 @@
-    /* Card Container */
-    .cards-container {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 8px; /* Reduce gap for tighter spacing */
-        justify-content: flex-start; /* Align cards to the start */
-        margin-top: 15px;
+.cards-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px; /* Provide adequate spacing between cards */
+    justify-content: flex-start; /* Align cards to the start */
+    margin-top: 20px;
+}
+
+/* Category Header Styling */
+.category-header {
+    color: #ED7117;
+    font-size: 1.8rem; /* Adjust font size for better readability */
+    font-weight: bold;
+    margin: 30px 0 10px; /* Add spacing above and below category headers */
+    text-align: center;
+    text-transform: uppercase;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+/* Divider Styling */
+.category-divider {
+    height: 2px;
+    background-color: #ED7117;
+    margin: 10px 0 20px;
+    border-radius: 1px;
+}
+
+/* Main Divider Between Sections */
+.main-divider {
+    height: 4px;
+    background-color: #ED7117;
+    margin: 30px 0; /* Add spacing between products and merch sections */
+    border-radius: 2px;
+}
+
+/* Toggle Icon Styling */
+.toggle-icon {
+    cursor: pointer;
+    font-size: 1.5rem;
+    color: #ED7117;
+}
+
+/* Product and Merch Card Styling */
+.product-card, .merch-card {
+    background-color: #362532;
+    color: white;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    padding: 15px;
+    text-align: center;
+    flex: 0 1 calc(20% - 20px); /* Adjust width for better alignment */
+    max-width: calc(20% - 20px);
+    min-height: 300px; /* Ensure consistent height for all cards */
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between; /* Distribute content evenly */
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+/* Image Styling for Cards */
+.product-card img, .merch-card img {
+    width: 100%;
+    height: 150px; /* Fixed height for images */
+    object-fit: cover; /* Ensure proper image scaling */
+    border-radius: 5px;
+    margin-bottom: 10px; /* Add spacing below images */
+}
+
+/* Card Content Styling */
+.product-card h3, .merch-card h3 {
+    font-size: 1.1rem; /* Adjust font size */
+    margin: 10px 0;
+    color: #ED7117;
+    white-space: nowrap; /* Prevent text wrapping */
+    overflow: hidden; /* Hide overflowing text */
+    text-overflow: ellipsis; /* Add ellipsis for long text */
+}
+
+.product-card p, .merch-card p {
+    font-size: 0.9rem;
+    margin: 5px 0;
+}
+
+/* Hover Effect */
+.product-card:hover, .merch-card:hover {
+    transform: scale(1.05);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+}
+
+/* Responsive Adjustments for Tablets */
+@media screen and (max-width: 768px) {
+    .product-card, .merch-card {
+        flex: 1 1 calc(50% - 20px); /* Two cards per row on smaller screens */
+        min-height: 280px; /* Adjust height for smaller screens */
     }
 
-    /* Product Card Styling */
-    .product-card {
-        background-color: #362532;
-        color: white;
-        border-radius: 8px;
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-        padding: 10px; /* Reduce padding for compact design */
-        text-align: center;
-        transition: transform 0.3s ease, box-shadow 0.3s ease;
-        flex: 1 1 150px; /* Reduce flex-basis for smaller cards */
-        max-width: 180px; /* Adjust max-width for tighter layout */
-        margin: 5px; /* Reduce margin for tighter spacing */
-    }
-
-    /* Product Image Styling */
-    .product-card img {
-        width: 100%; /* Ensure images are responsive */
-        max-height: 120px; /* Reduce max-height for smaller images */
-        object-fit: cover; /* Ensure the image scales correctly without distortion */
-        border-radius: 5px;
-        margin-bottom: 8px; /* Adjust spacing below the image */
-    }
-
-    /* Product Card Content */
-    .product-card h3 {
-        font-size: 1.2rem; /* Reduce font size for product names */
-        margin: 8px 0;
-        color: #ED7117;
-    }
-
-    .product-card p {
-        font-size: 0.9rem; /* Reduce font size for descriptions and details */
-        margin: 4px 0;
-    }
-
-    /* Product Card Hover Effect */
-    .product-card:hover {
-        transform: scale(1.05);
-        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
-    }
-
-    /* Category Header */
     .category-header {
-        color: #ED7117;
-        font-size: 1.8rem; /* Slightly reduce font size */
-        font-weight: bold;
-        margin: 25px 0 15px;
-        text-align: center;
-        text-transform: uppercase;
+        font-size: 1.4rem; /* Reduce font size for smaller screens */
+    }
+}
+
+/* Responsive Adjustments for Mobile */
+@media screen and (max-width: 480px) {
+    .product-card, .merch-card {
+        flex: 1 1 100%; /* One card per row on very small screens */
+        min-height: 260px; /* Adjust height */
     }
 
-    /* Responsive Adjustments */
-    @media screen and (max-width: 768px) {
-        .product-card {
-            flex: 1 1 calc(50% - 10px); /* Adjust to two cards per row on smaller screens */
-            margin: 8px 0;
-        }
-
-        .category-header {
-            font-size: 1.3rem; /* Reduce font size for smaller screens */
-        }
+    .category-header {
+        font-size: 1.2rem; /* Further reduce font size */
     }
-
-    @media screen and (max-width: 480px) {
-        .product-card {
-            flex: 1 1 100%; /* Display one card per row on very small screens */
-            margin: 8px 0;
-        }
-
-        .category-header {
-            font-size: 1.2rem; /* Further reduce category header size */
-        }
-    }
+}
