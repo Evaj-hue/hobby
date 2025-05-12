@@ -9,7 +9,7 @@ if (!isset($_SESSION['user']) || !isset($_SESSION['user']['id']) || !in_array($_
 }
 
 // Fetch the username from the database based on the logged-in user's ID
-$userId = $_SESSION['user']['id']; // Corrected session key
+$userId = $_SESSION['user']['id'];
 
 $stmt = $conn->prepare("SELECT username FROM users WHERE id = :user_id");
 $stmt->bindValue(':user_id', $userId, PDO::PARAM_INT);
@@ -22,37 +22,91 @@ $username = $user ? htmlspecialchars($user['username']) : "Unknown User";
 function logActivity($userId, $action, $details) {
     global $conn;
 
-    // Get the username of the logged-in user
-    $sql = "SELECT username FROM users WHERE id = :user_id";
-    $stmt = $conn->prepare($sql);
-    $stmt->bindValue(':user_id', $userId, PDO::PARAM_INT);
-    $stmt->execute();
-    $user = $stmt->fetch(PDO::FETCH_ASSOC);
-    
-    $username = $user ? $user['username'] : '';
+    $stmt = $conn->prepare("INSERT INTO activity_log (user_id, username, action, details) VALUES (:user_id, :username, :action, :details)");
+    $stmt->execute([':user_id' => $userId, ':username' => $_SESSION['user']['username'], ':action' => $action, ':details' => $details]);
+}
 
-    // Insert the activity log with username
-    $sql = "INSERT INTO activity_log (user_id, username, action, details) VALUES (:user_id, :username, :action, :details)";
-    $stmt = $conn->prepare($sql);
-    $stmt->execute([':user_id' => $userId, ':username' => $username, ':action' => $action, ':details' => $details]);
+// Function to resize an image
+function resizeImage($source, $destination, $width, $height) {
+    $imageInfo = getimagesize($source);
+    $mime = $imageInfo['mime'];
+
+    // Create an image resource based on mime type
+    switch ($mime) {
+        case 'image/jpeg':
+            $image = imagecreatefromjpeg($source);
+            break;
+        case 'image/png':
+            $image = imagecreatefrompng($source);
+            break;
+        case 'image/gif':
+            $image = imagecreatefromgif($source);
+            break;
+        default:
+            throw new Exception('Unsupported image type.');
+    }
+
+    // Create a blank canvas for the resized image
+    $resizedImage = imagecreatetruecolor($width, $height);
+
+    // Preserve transparency for PNG and GIF
+    if ($mime === 'image/png' || $mime === 'image/gif') {
+        imagealphablending($resizedImage, false);
+        imagesavealpha($resizedImage, true);
+        $transparent = imagecolorallocatealpha($resizedImage, 255, 255, 255, 127);
+        imagefilledrectangle($resizedImage, 0, 0, $width, $height, $transparent);
+    }
+
+    // Resize the image
+    imagecopyresampled($resizedImage, $image, 0, 0, 0, 0, $width, $height, imagesx($image), imagesy($image));
+
+    // Save the resized image
+    switch ($mime) {
+        case 'image/jpeg':
+            imagejpeg($resizedImage, $destination, 90);
+            break;
+        case 'image/png':
+            imagepng($resizedImage, $destination);
+            break;
+        case 'image/gif':
+            imagegif($resizedImage, $destination);
+            break;
+    }
+
+    // Free memory
+    imagedestroy($image);
+    imagedestroy($resizedImage);
 }
 
 // Handle adding a new product
 if (isset($_POST['add_product'])) {
     $product_name = $_POST['product_name'];
+    $description = $_POST['description'];
     $category = $_POST['category'];
     $shelf = $_POST['shelf'];
     $units_in_stock = $_POST['units_in_stock'];
+    $price = $_POST['price'];
 
-    $sql = "INSERT INTO products (product_name, category, shelf, units_in_stock) VALUES (:product_name, :category, :shelf, :units_in_stock)";
+    // Handle file upload
+    $image = $_FILES['image'];
+    $image_path = "../product_image/" . basename($image['name']);
+
+    // Resize the image before saving
+    resizeImage($image['tmp_name'], $image_path, 200, 200);
+
+    $sql = "INSERT INTO products (product_name, description, category, shelf, units_in_stock, price, image) VALUES (:product_name, :description, :category, :shelf, :units_in_stock, :price, :image)";
     $stmt = $conn->prepare($sql);
-    $stmt->bindValue(':product_name', $product_name);
-    $stmt->bindValue(':category', $category);
-    $stmt->bindValue(':shelf', $shelf);
-    $stmt->bindValue(':units_in_stock', $units_in_stock, PDO::PARAM_INT);
-    $stmt->execute();
+    $stmt->execute([
+        ':product_name' => $product_name,
+        ':description' => $description,
+        ':category' => $category,
+        ':shelf' => $shelf,
+        ':units_in_stock' => $units_in_stock,
+        ':price' => $price,
+        ':image' => $image_path
+    ]);
 
-    logActivity($userId, "added product", "Product: $product_name, Category: $category, Shelf: $shelf, Stock: $units_in_stock");
+    logActivity($userId, "added product", "Product: $product_name, Category: $category, Shelf: $shelf, Stock: $units_in_stock, Price: $price");
 
     $_SESSION['message'] = 'Product added successfully!';
     header('Location: manage_products.php');
@@ -86,19 +140,47 @@ if (isset($_POST['remove_product'])) {
 if (isset($_POST['update_product'])) {
     $product_id = $_POST['product_id'];
     $product_name = $_POST['product_name'];
+    $description = $_POST['description'];
     $category = $_POST['category'];
     $shelf = $_POST['shelf'];
     $units_in_stock = $_POST['units_in_stock'];
+    $price = $_POST['price'];
 
-    $stmt = $conn->prepare("UPDATE products SET product_name = :product_name, category = :category, shelf = :shelf, units_in_stock = :units_in_stock WHERE id = :product_id");
-    $stmt->bindValue(':product_name', $product_name);
-    $stmt->bindValue(':category', $category);
-    $stmt->bindValue(':shelf', $shelf);
-    $stmt->bindValue(':units_in_stock', $units_in_stock, PDO::PARAM_INT);
-    $stmt->bindValue(':product_id', $product_id, PDO::PARAM_INT);
-    $stmt->execute();
+    // Handle new image upload if provided
+    if (!empty($_FILES['image']['name'])) {
+        $image = $_FILES['image'];
+        $image_path = "../product_image/" . basename($image['name']);
 
-    logActivity($userId, "updated product", "Product ID: $product_id, New Name: $product_name, New Category: $category, New Shelf: $shelf, New Stock: $units_in_stock");
+        // Resize the image before saving
+        resizeImage($image['tmp_name'], $image_path, 200, 200);
+
+        $sql = "UPDATE products SET product_name = :product_name, description = :description, category = :category, shelf = :shelf, units_in_stock = :units_in_stock, price = :price, image = :image WHERE id = :product_id";
+        $stmt = $conn->prepare($sql);
+        $stmt->execute([
+            ':product_name' => $product_name,
+            ':description' => $description,
+            ':category' => $category,
+            ':shelf' => $shelf,
+            ':units_in_stock' => $units_in_stock,
+            ':price' => $price,
+            ':image' => $image_path,
+            ':product_id' => $product_id
+        ]);
+    } else {
+        $sql = "UPDATE products SET product_name = :product_name, description = :description, category = :category, shelf = :shelf, units_in_stock = :units_in_stock, price = :price WHERE id = :product_id";
+        $stmt = $conn->prepare($sql);
+        $stmt->execute([
+            ':product_name' => $product_name,
+            ':description' => $description,
+            ':category' => $category,
+            ':shelf' => $shelf,
+            ':units_in_stock' => $units_in_stock,
+            ':price' => $price,
+            ':product_id' => $product_id
+        ]);
+    }
+
+    logActivity($userId, "updated product", "Product ID: $product_id, New Name: $product_name, New Description: $description, New Category: $category, New Shelf: $shelf, New Stock: $units_in_stock, New Price: $price");
 
     $_SESSION['message'] = 'Product updated successfully!';
     header('Location: manage_products.php');
@@ -113,7 +195,6 @@ if (!$result) {
     die("Query Failed: " . $conn->errorInfo()[2]);
 }
 ?>
-
 
 <!DOCTYPE html>
 <html lang="en">
@@ -214,8 +295,6 @@ table tbody tr:hover {
 <?php include("../partials/sidebar.php"); ?> 
 <?php include("../partials/navbar.php"); ?> 
 
-       
-
         <h2 class="text-center mb-4">Manage Products</h2>
         <span class="navbar-text me-3">Welcome, <?php echo $username; ?>!</span>
         <!-- Add Product Button -->
@@ -227,9 +306,12 @@ table tbody tr:hover {
                 <tr>
                     <th>ID</th>
                     <th>Product Name</th>
+                    <th>Description</th>
                     <th>Category</th>
                     <th>Shelf</th>
                     <th>Units in Stock</th>
+                    <th>Price</th>
+                    <th>Image</th>
                     <th>Actions</th>
                 </tr>
             </thead>
@@ -238,16 +320,22 @@ table tbody tr:hover {
                 <tr>
                         <td><?php echo htmlspecialchars($row['id']); ?></td>
                         <td><?php echo htmlspecialchars($row['product_name']); ?></td>
+                        <td><?php echo htmlspecialchars($row['description']); ?></td>
                         <td><?php echo htmlspecialchars($row['category']); ?></td>
                         <td><?php echo htmlspecialchars($row['shelf']); ?></td>
                         <td><?php echo htmlspecialchars($row['units_in_stock']); ?></td>
+                        <td><?php echo htmlspecialchars($row['price']); ?></td>
+                        <td><img src="<?php echo htmlspecialchars($row['image']); ?>" width="50" alt="Product Image"></td>
                         <td>
                             <button class="btn btn-warning btn-sm" data-bs-toggle="modal" data-bs-target="#editProductModal"
                                     data-id="<?php echo $row['id']; ?>" 
                                     data-name="<?php echo $row['product_name']; ?>" 
+                                    data-description="<?php echo $row['description']; ?>"
                                     data-category="<?php echo $row['category']; ?>" 
                                     data-shelf="<?php echo $row['shelf']; ?>" 
-                                    data-stock="<?php echo $row['units_in_stock']; ?>">Edit</button>
+                                    data-stock="<?php echo $row['units_in_stock']; ?>"
+                                    data-price="<?php echo $row['price']; ?>"
+                                    data-image="<?php echo $row['image']; ?>">Edit</button>
 
                             <form action="" method="POST" style="display:inline;">
                                 <input type="hidden" name="product_id" value="<?php echo $row['id']; ?>">
@@ -265,44 +353,39 @@ table tbody tr:hover {
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://code.jquery.com/jquery-3.5.1.js"></script>
     <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
-    <!-- Bootstrap JS (for Toast functionality) -->
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         $(document).ready(function() {
             $('#productsTable').DataTable();
 
             var toastEl = document.getElementById('liveToast');
-    if (toastEl && toastEl.querySelector('.toast-body').textContent.trim() !== '') {
-        var toast = new bootstrap.Toast(toastEl);
-        toast.show();
-    }
-
+            if (toastEl && toastEl.querySelector('.toast-body').textContent.trim() !== '') {
+                var toast = new bootstrap.Toast(toastEl);
+                toast.show();
+            }
 
             // Populate the edit modal with product data
             $('#editProductModal').on('show.bs.modal', function(event) {
                 var button = $(event.relatedTarget); // Button that triggered the modal
                 var productId = button.data('id');
                 var productName = button.data('name');
+                var description = button.data('description');
                 var category = button.data('category');
                 var shelf = button.data('shelf');
                 var stock = button.data('stock');
+                var price = button.data('price');
+                var image = button.data('image');
 
                 var modal = $(this);
                 modal.find('#edit_product_id').val(productId);
                 modal.find('#edit_product_name').val(productName);
+                modal.find('#edit_description').val(description);
                 modal.find('#edit_category').val(category);
                 modal.find('#edit_shelf').val(shelf);
                 modal.find('#edit_units_in_stock').val(stock);
+                modal.find('#edit_price').val(price);
+                modal.find('#edit_image_preview').attr('src', image); // Set image preview in modal
             });
-           
         });
-        $maxStockLimit = 50; // Define max stock limit
-
-         if ($units_in_stock > $maxStockLimit) {
-         $_SESSION['message'] = "Error: Maximum stock limit is $maxStockLimit units.";
-         header('Location: manage_products.php');
-         exit();
-}
     </script>
 </body>
 </html>
