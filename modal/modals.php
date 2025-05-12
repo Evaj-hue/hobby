@@ -77,7 +77,7 @@
 <div class="modal fade" id="addProductModal" tabindex="-1" aria-labelledby="addProductModalLabel" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
-            <form action="manage_products.php" method="POST">
+            <form action="manage_products.php" method="POST" enctype="multipart/form-data">
                 <div class="modal-header">
                     <h5 class="modal-title" id="addProductModalLabel">Add New Product</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
@@ -89,8 +89,19 @@
                     </div>
                     
                     <div class="mb-3">
+                        <label for="description" class="form-label">Description</label>
+                        <textarea name="description" id="description" class="form-control" rows="3" required></textarea>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="price" class="form-label">Price</label>
+                        <input type="number" name="price" id="price" class="form-control" step="0.01" required>
+                    </div>
+
+                    <div class="mb-3">
                         <label for="category" class="form-label">Category</label>
                         <select name="category" id="category" class="form-select" required onchange="updateShelves('category', 'shelf')">
+                            <option value="" selected disabled>Select Category</option>
                             <option value="coffee">Coffee</option>
                             <option value="tea">Tea</option>
                             <option value="pastries">Pastries</option>
@@ -99,17 +110,21 @@
                         </select>
                     </div>
 
-                    <!-- Updated Shelf Dropdown -->
                     <div class="mb-3">
                         <label for="shelf" class="form-label">Shelf</label>
                         <select name="shelf" id="shelf" class="form-select" required>
-                            <option value="" disabled selected>Select a shelf</option>
+                            <option value="" selected disabled>Select a shelf</option>
                         </select>
                     </div>
 
                     <div class="mb-3">
                         <label for="units_in_stock" class="form-label">Units in Stock</label>
                         <input type="number" name="units_in_stock" id="units_in_stock" class="form-control" required min="1" max="50">
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="image" class="form-label">Product Image</label>
+                        <input type="file" name="image" id="image" class="form-control" accept="image/*" required>
                     </div>
                 </div>
                 <div class="modal-footer">
@@ -125,7 +140,7 @@
 <div class="modal fade" id="editProductModal" tabindex="-1" aria-labelledby="editProductModalLabel" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
-            <form action="manage_products.php" method="POST">
+            <form action="manage_products.php" method="POST" enctype="multipart/form-data">
                 <div class="modal-header">
                     <h5 class="modal-title" id="editProductModalLabel">Edit Product</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
@@ -139,28 +154,43 @@
                     </div>
 
                     <div class="mb-3">
+                        <label for="edit_description" class="form-label">Description</label>
+                        <textarea name="description" id="edit_description" class="form-control" rows="3" required></textarea>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="edit_price" class="form-label">Price</label>
+                        <input type="number" name="price" id="edit_price" class="form-control" step="0.01" required>
+                    </div>
+
+                    <div class="mb-3">
                         <label for="edit_category" class="form-label">Category</label>
                         <select name="category" id="edit_category" class="form-select" required onchange="updateShelves('edit_category', 'edit_shelf')">
+                            <option value="" selected disabled>Select Category</option>
                             <option value="coffee">Coffee</option>
                             <option value="tea">Tea</option>
                             <option value="pastries">Pastries</option>
                             <option value="sandwiches">Sandwiches</option>
                             <option value="beverages">Beverages</option>
                         </select>
-                        </div>
+                    </div>
 
-                    <!-- Updated Shelf Dropdown -->
-                     <!-- Updated Shelf: Now a Dropdown Instead of Text Input -->
-                     <div class="mb-3">
+                    <div class="mb-3">
                         <label for="edit_shelf" class="form-label">Shelf</label>
                         <select name="shelf" id="edit_shelf" class="form-select" required>
-                            <option value="">Select a shelf</option>
+                            <option value="" selected disabled>Select a shelf</option>
                         </select>
                     </div>
 
                     <div class="mb-3">
                         <label for="edit_units_in_stock" class="form-label">Units in Stock</label>
                         <input type="number" name="units_in_stock" id="edit_units_in_stock" class="form-control" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="edit_image" class="form-label">Product Image</label>
+                        <input type="file" name="image" id="edit_image" class="form-control" accept="image/*">
+                        <small class="form-text text-muted">Leave blank to keep the current image.</small>
                     </div>
                 </div>
                 <div class="modal-footer">
@@ -190,7 +220,6 @@
         // Clear previous options
         shelfDropdown.innerHTML = "<option value='' disabled selected>Select a shelf</option>";
 
-
         // Add new options based on selected category
         if (shelves[category]) {
             shelves[category].forEach(function (shelf) {
@@ -202,10 +231,12 @@
         }
     }
 
-        // Function to update shelves when editing
+    // Function to update shelves when editing
     function loadEditProduct(product) {
         document.getElementById('edit_product_id').value = product.id;
         document.getElementById('edit_product_name').value = product.name;
+        document.getElementById('edit_description').value = product.description;
+        document.getElementById('edit_price').value = product.price;
         document.getElementById('edit_category').value = product.category;
         updateShelves('edit_category', 'edit_shelf'); // Ensure the shelves are updated
         setTimeout(() => {
@@ -213,17 +244,6 @@
         }, 100); // Add slight delay to ensure options are populated before selection
         document.getElementById('edit_units_in_stock').value = product.units_in_stock;
     }
-
-
-
-    document.getElementById('units_in_stock').addEventListener('input', function() {
-    let maxStock = 50; // Set the maximum stock limit
-    if (this.value > maxStock) {
-        alert('You cannot add more than ' + maxStock + ' units.');
-        this.value = maxStock;
-    }
-});
-
 </script>
 
 <!-- Add User Modal -->

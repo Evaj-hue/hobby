@@ -151,31 +151,53 @@ while ($row = $result->fetch(PDO::FETCH_ASSOC)) {
             border-radius: 1px;
         }
 
-        /* Responsive Adjustments */
-        @media screen and (max-width: 1200px) {
-            .product-card {
-                flex: 1 1 calc(25% - 16px); /* 4 cards per row */
-            }
+        /* Popup Styling */
+        .popup-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5); /* Semi-transparent background */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
         }
 
-        @media screen and (max-width: 768px) {
-            .product-card {
-                flex: 1 1 calc(50% - 16px); /* 2 cards per row */
-            }
-
-            .category-header {
-                font-size: 1.5rem;
-            }
+        .popup {
+            background: white;
+            width: 300px;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
         }
 
-        @media screen and (max-width: 480px) {
-            .product-card {
-                flex: 1 1 100%; /* 1 card per row */
-            }
+        .popup h2 {
+            font-size: 1.5rem;
+            color: #ED7117;
+            margin-bottom: 10px;
+        }
 
-            .category-header {
-                font-size: 1.3rem;
-            }
+        .popup p {
+            font-size: 1rem;
+            color: #333;
+            margin-bottom: 20px;
+        }
+
+        .popup button {
+            background: #ED7117;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1rem;
+        }
+
+        .popup button:hover {
+            background: #c9560e;
         }
     </style>
 </head>
@@ -210,6 +232,28 @@ while ($row = $result->fetch(PDO::FETCH_ASSOC)) {
         </div>
     </div>
 
+    <!-- Popup HTML -->
+    <div class="popup-overlay" id="popup">
+        <div class="popup">
+            <h2>Notice</h2>
+            <p>The products displayed are available in-store only.</p>
+            <button onclick="closePopup()">Okay</button>
+        </div>
+    </div>
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Show popup on page load
+        document.addEventListener('DOMContentLoaded', function () {
+            const popup = document.getElementById('popup');
+            popup.style.display = 'flex'; // Show popup
+        });
+
+        // Close popup function
+        function closePopup() {
+            const popup = document.getElementById('popup');
+            popup.style.display = 'none'; // Hide popup
+        }
+    </script>
 </body>
 </html>
