@@ -1,9 +1,10 @@
 <?php
 session_start();
 include '../includes/db.php';
+
 // Check if the user is logged in
 if (!isset($_SESSION['user'])) {
-    header('Location: index.html'); // Redirect to login page if not logged in
+    header('Location: ../index.html'); // Redirect to login page if not logged in
     exit();
 }
 
@@ -16,8 +17,8 @@ if ($user['role'] !== 'user') {
     exit();
 }
 
-// Fetch products from the database
-$sql = "SELECT * FROM products";
+// Fetch merch products from the database
+$sql = "SELECT * FROM merch_products";
 $result = $conn->query($sql);
 
 if (!$result) {
@@ -30,7 +31,7 @@ if (!$result) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>View Products</title>
+    <title>View Merch</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
     <style>
@@ -70,37 +71,36 @@ if (!$result) {
             border: 1px solid #7a8c74 !important;
             padding: 5px;
         }
+        
     </style>
 </head>
 <body>
 <div class="content">
-<?php include("../partials/user_navbar.php"); ?> <!-- Sidebar included -->
+<?php include("../partials/user_navbar.php"); ?> <!-- Navbar included -->
 <?php include("../partials/user_sidebar.php"); ?> <!-- Sidebar included -->
-    <h2 class="text-center mb-4">List of Products</h2>
-    <table id="productsTable" class="table table-bordered table-striped">
+    <h2 class="text-center mb-4">List of Merch</h2>
+    <table id="merchTable" class="table table-bordered table-striped">
         <thead>
             <tr>
                 <th>ID</th>
-                <th>Product Name</th>
+                <th>Name</th>
                 <th>Description</th>
-                <th>Category</th>
-                <th>Shelf</th>
-                <th>Units in Stock</th>
                 <th>Price</th>
+                <th>Stock</th>
+                <th>Category</th>
                 <th>Image</th>
             </tr>
         </thead>
         <tbody>
         <?php while ($row = $result->fetch(PDO::FETCH_ASSOC)): ?>
             <tr>
-                <td><?php echo htmlspecialchars($row['id']); ?></td>
+                <td><?php echo htmlspecialchars($row['product_id']); ?></td>
                 <td><?php echo htmlspecialchars($row['product_name']); ?></td>
                 <td><?php echo htmlspecialchars($row['description']); ?></td>
-                <td><?php echo htmlspecialchars($row['category']); ?></td>
-                <td><?php echo htmlspecialchars($row['shelf']); ?></td>
-                <td><?php echo htmlspecialchars($row['units_in_stock']); ?></td>
                 <td><?php echo htmlspecialchars($row['price']); ?></td>
-                <td><img src="<?php echo htmlspecialchars($row['image']); ?>" width="50" alt="Product Image"></td>
+                <td><?php echo htmlspecialchars($row['stock_quantity']); ?></td>
+                <td><?php echo htmlspecialchars($row['category']); ?></td>
+                <td><img src="<?php echo htmlspecialchars($row['image']); ?>" width="50" alt="Merch Image"></td>
             </tr>
         <?php endwhile; ?>
         </tbody>
@@ -112,7 +112,7 @@ if (!$result) {
 <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
 <script>
     $(document).ready(function() {
-        $('#productsTable').DataTable();
+        $('#merchTable').DataTable();
     });
 </script>
 </body>

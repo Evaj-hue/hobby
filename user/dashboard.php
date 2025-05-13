@@ -6,6 +6,15 @@ if (!isset($_SESSION['user'])) {
 }
 
 include '../includes/db.php';
+// Fetch total number of products
+$totalProductsSql = "SELECT COUNT(*) as total FROM products";
+$totalProductsResult = $conn->query($totalProductsSql);
+$totalProducts = $totalProductsResult->fetch(PDO::FETCH_ASSOC)['total'];
+
+// Fetch total number of merch
+$totalMerchSql = "SELECT COUNT(*) as total FROM merch_products";
+$totalMerchResult = $conn->query($totalMerchSql);
+$totalMerch = $totalMerchResult->fetch(PDO::FETCH_ASSOC)['total'];
 
 // Function to resize images
 function resizeImage($source, $destination, $width, $height) {
@@ -105,6 +114,39 @@ while ($row = $merchResult->fetch(PDO::FETCH_ASSOC)) {
     <link rel="stylesheet" href="/idealcozydesign/css/cards.css"/>
     <title>User Dashboard</title>
     <style>
+         .widget-container {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 40px;
+    }
+
+    .widget-container .widget {
+        flex: 1;
+        margin: 0 10px;
+        padding: 20px;
+        background-color: #2D3748;
+        border-radius: 10px;
+        text-align: center;
+        color: white;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        text-decoration: none;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .widget-container .widget:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+    }
+
+    .widget-container .widget h5 {
+        font-size: 1.2rem;
+        margin-bottom: 15px;
+    }
+
+    .widget-container .widget p {
+        font-size: 2.5rem;
+        margin: 0;
+    }
         .dashboard-container {
             padding: 20px;
         }
@@ -242,11 +284,21 @@ while ($row = $merchResult->fetch(PDO::FETCH_ASSOC)) {
 <body>
     <?php include("../partials/user_navbar.php"); ?>
     <?php include("../partials/user_sidebar.php"); ?>
-
+        
 <div class="dashboard-container">
     <div class="dashboard-content">
-        <h1 class="text-center">Dashboard</h1>
-
+       
+        <!-- Widgets Section -->
+<div class="widget-container">
+    <a href="view_products.php" class="widget bg-success text-white">
+        <h5>Total Products</h5>
+        <p><?php echo $totalProducts; ?></p>
+    </a>
+    <a href="view_merch.php" class="widget bg-primary text-white">
+        <h5>Total Merch</h5>
+        <p><?php echo $totalMerch; ?></p>
+    </a>
+</div>
         <!-- Toggle All Products Section -->
         <h2 class="category-header products">
             All Products
@@ -297,7 +349,7 @@ while ($row = $merchResult->fetch(PDO::FETCH_ASSOC)) {
                                 <img src="<?= htmlspecialchars($item['image']); ?>" alt="<?= htmlspecialchars($item['product_name']); ?>">
                                 <h3><?= htmlspecialchars($item['product_name']); ?></h3>
                                 <p><?= htmlspecialchars($item['description']); ?></p>
-                                <p>Price: $<?= htmlspecialchars($item['price']); ?></p>
+                                <p>Price: ₱<?= htmlspecialchars($item['price']); ?></p>
                                 <p>Stock: <?= htmlspecialchars($item['stock_quantity']); ?></p>
                             </div>
                         <?php endforeach; ?>

@@ -6,6 +6,7 @@
     <a href="../user/dashboard.php">Dashboard</a>
     <a href="../rack/view_rack_dashboard.php">View Racks</a>
     <a href="../user/view_products.php">View Products</a>
+    <a href="../user/view_merch.php">View Merchandise</a>
     <a href="../logout.php">Logout</a>
 </div>
 
