@@ -16,15 +16,29 @@ $stmt->execute();
 $user = $stmt->fetch(PDO::FETCH_ASSOC);
 $username = $user ? htmlspecialchars($user['username']) : "Unknown User";
 
+// Fetch total activity logs
+$totalActivitiesSql = "SELECT COUNT(*) as total FROM activity_log";
+$totalActivitiesResult = $conn->query($totalActivitiesSql);
+$totalActivities = $totalActivitiesResult->fetch(PDO::FETCH_ASSOC)['total'];
+
+// Fetch total merch activity logs
+$totalMerchSql = "SELECT COUNT(*) as total FROM activity_log WHERE action LIKE '%merch%'";
+$totalMerchResult = $conn->query($totalMerchSql);
+$totalMerch = $totalMerchResult->fetch(PDO::FETCH_ASSOC)['total'];
+
+// Fetch total product activity logs
+$totalProductSql = "SELECT COUNT(*) as total FROM activity_log WHERE action LIKE '%product%'";
+$totalProductResult = $conn->query($totalProductSql);
+$totalProduct = $totalProductResult->fetch(PDO::FETCH_ASSOC)['total'];
+
 // Fetch activity log from the database
 $sql = "SELECT id, username, action, details, created_at FROM activity_log ORDER BY created_at DESC";
 $result = $conn->query($sql);
 
-// Updated SQL queries for Merch and Product Activity Logs
+// Fetch results for Merch and Product Activity Logs
 $merchSql = "SELECT id, action, details, created_at FROM activity_log WHERE action LIKE '%merch%' ORDER BY created_at DESC";
 $productSql = "SELECT id, action, details, created_at FROM activity_log WHERE action LIKE '%product%' ORDER BY created_at DESC";
 
-// Fetch results for Merch and Product Activity Logs
 $merchResult = $conn->query($merchSql);
 $productResult = $conn->query($productSql);
 ?>
@@ -51,50 +65,35 @@ $productResult = $conn->query($productSql);
             padding: 20px;
         }
 
-        /* Table Styling */
-        table {
-            background-color: #3d4f40 !important; /* Darker green-gray */
+        /* Widgets Styling */
+        .card {
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+
+        .table {
+            background-color: #3d4f40 !important;
             color: white !important;
             border-radius: 10px;
-            overflow: hidden;
-            width: 100%;
             border-collapse: collapse;
         }
 
-        /* Table Header */
-        thead {
-            background-color: #50624e !important;
-            font-size: 1rem;
-            font-weight: bold;
-        }
-
-        /* Force White Text in Table */
-        table th, table td {
+        .table th, .table td {
             color: white !important;
-            padding: 15px; /* More padding for better spacing */
             text-align: center;
             vertical-align: middle;
             border: 1px solid #7a8c74;
         }
 
-        /* Hover Effect */
-        table tbody tr:hover {
+        .table tbody tr:hover {
             background-color: #5a6b58 !important;
-        }
-
-        /* DataTables Input & Select */
-        .dataTables_wrapper input, .dataTables_wrapper select {
-            background-color: #50624e !important;
-            color: white !important;
-            border: 1px solid #7a8c74 !important;
-            padding: 5px;
         }
 
         /* Scrollable Icons */
         .scroll-icons {
             display: flex;
             gap: 20px;
-            margin-bottom: 20px; /* Add spacing below the icons */
+            margin-bottom: 20px;
         }
 
         .scroll-icons a {
@@ -114,7 +113,6 @@ $productResult = $conn->query($productSql);
             background-color: #5a6b58;
         }
 
-        /* Responsive Table */
         @media (max-width: 768px) {
             .content {
                 margin-left: 0;
@@ -136,17 +134,53 @@ $productResult = $conn->query($productSql);
 
     <?php include("../partials/navbar.php"); ?>
     <?php include("../partials/sidebar.php"); ?>
+
     <div class="content">
+        <!-- Widgets Section -->
+        <div class="container my-4">
+            <div class="row text-center">
+                <!-- Widget 1: Total Activity Logs -->
+                <div class="col-md-4">
+                    <div class="card bg-success text-white">
+                        <div class="card-body">
+                            <h5 class="card-title">Users Activity Logs</h5>
+                            <p class="card-text display-4"><?php echo $totalActivities; ?></p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Widget 2: Merch Activity Logs -->
+                <div class="col-md-4">
+                    <div class="card bg-primary text-white">
+                        <div class="card-body">
+                            <h5 class="card-title">Merch Activity Logs</h5>
+                            <p class="card-text display-4"><?php echo $totalMerch; ?></p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Widget 3: Product Activity Logs -->
+                <div class="col-md-4">
+                    <div class="card bg-warning text-dark">
+                        <div class="card-body">
+                            <h5 class="card-title">Product Activity Logs</h5>
+                            <p class="card-text display-4"><?php echo $totalProduct; ?></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Clickable Icons Section -->
         <div class="scroll-icons">
             <a href="#userActivityTable" title="Go to User Activity">👤 User Activity</a>
             <a href="#merchActivityLogTable" title="Go to Merch Activity">🛒 Merch</a>
             <a href="#productActivityLogTable" title="Go to Product Activity">📦 Product</a>
         </div>
 
+        <!-- User Activity Logs Table -->
         <h2 class="text-center mb-4" id="userActivityTable">User Activity Reports</h2>
         <span class="navbar-text me-3">Welcome, <?php echo $username; ?>!</span>
-
-        <!-- Reports Table -->
         <table id="activityLogTable" class="table table-bordered table-striped">
             <thead class="table-dark">
                 <tr>
