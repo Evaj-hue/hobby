@@ -1,71 +1,96 @@
 document.addEventListener("DOMContentLoaded", function () {
-    const container = document.getElementById('charts-container');
-    let charts = {}; // Store chart instances
+    const chartsContainer = document.getElementById("charts-container");
 
-    function fetchDataAndUpdateCharts() {
-        fetch("../admin/get_product_data.php")
-            .then(response => response.json())
-            .then(data => {
-                console.log("Fetched Product Data:", data);
+    function fetchCharts() {
+        // Clear the container before appending new charts
+        chartsContainer.innerHTML = "";
 
-                if (!data || Object.keys(data).length === 0) {
-                    container.innerHTML = "<p style='color: red;'>No product data found.</p>";
-                    return;
-                }
+        fetch("../admin/get_product_logs.php")
+            .then((response) => response.json())
+            .then((data) => {
+                // Iterate over the fetched data and create chart containers
+                Object.entries(data).forEach(([category, details]) => {
+                    const chartContainer = document.createElement("div");
+                    chartContainer.classList.add("chart-container");
 
-                Object.keys(data).forEach((category, index) => {
-                    let chartId = `chart-${index}`;
-                    let canvasId = `chartCanvas-${index}`;
+                    chartContainer.innerHTML = `
+                        <div class="chart-header">
+                            <h3>${category}</h3>
+                        </div>
+                        <canvas id="chart-${category}"></canvas>
+                    `;
 
-                    if (!document.getElementById(chartId)) {
-                        const section = document.createElement('div');
-                        section.classList.add('chart-card');
+                    chartsContainer.appendChild(chartContainer);
 
-                        section.innerHTML = `
-                            <div class="chart-header">
-                                <h2>${category}</h2>
-                            </div>
-                            <div class="chart-content" id="${chartId}">
-                                <canvas id="${canvasId}"></canvas>
-                            </div>
-                        `;
-                        container.appendChild(section);
-                    }
-
-                    let ctx = document.getElementById(canvasId)?.getContext('2d');
-                    if (!ctx) {
-                        console.error("Canvas not found:", canvasId);
-                        return;
-                    }
-
-                    if (!charts[chartId]) {
-                        charts[chartId] = new Chart(ctx, {
-                            type: 'bar',
-                            data: {
-                                labels: data[category]["products"],
-                                datasets: [{
-                                    label: `Stock Levels - ${category}`,
-                                    data: data[category]["stocks"],
-                                    backgroundColor: 'rgba(75, 192, 192, 0.2)',
-                                    borderColor: 'rgba(75, 192, 192, 1)',
-                                    borderWidth: 1
-                                }]
+                    // Render the chart with axis labels
+                    const ctx = document.getElementById(`chart-${category}`).getContext("2d");
+                    new Chart(ctx, {
+                        type: "bar",
+                        data: {
+                            labels: details.products,
+                            datasets: [{
+                                label: "Stock Levels",
+                                data: details.stocks,
+                                backgroundColor: "rgba(72, 187, 120, 0.2)",
+                                borderColor: "rgba(72, 187, 120, 1)",
+                                borderWidth: 1
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {
+                                legend: {
+                                    display: true,
+                                    labels: {
+                                        color: "#ECC94B" // Customize legend text color
+                                    }
+                                }
                             },
-                            options: {
-                                responsive: true,
-                                maintainAspectRatio: false,
-                                scales: { y: { beginAtZero: true } }
+                            scales: {
+                                x: {
+                                    title: {
+                                        display: true,
+                                        text: "Products", // X-axis label
+                                        color: "#ECC94B", // Customize label color
+                                        font: {
+                                            size: 14,
+                                            weight: "bold"
+                                        }
+                                    },
+                                    ticks: {
+                                        color: "#E2E8F0", // Customize tick text color
+                                        font: {
+                                            size: 12
+                                        }
+                                    }
+                                },
+                                y: {
+                                    title: {
+                                        display: true,
+                                        text: "Stock", // Y-axis label
+                                        color: "#ECC94B", // Customize label color
+                                        font: {
+                                            size: 14,
+                                            weight: "bold"
+                                        }
+                                    },
+                                    ticks: {
+                                        color: "#E2E8F0", // Customize tick text color
+                                        font: {
+                                            size: 12
+                                        }
+                                    },
+                                    beginAtZero: true // Ensure Y-axis starts at zero
+                                }
                             }
-                        });
-                    } else {
-                        charts[chartId].data.labels = data[category]["products"];
-                        charts[chartId].data.datasets[0].data = data[category]["stocks"];
-                        charts[chartId].update();
-                    }
+                        }
+                    });
                 });
             })
-            .catch(error => console.error("Error fetching product data:", error));
+            .catch((error) => console.error("Error fetching data:", error));
     }
 
-    fetchDataAndUpdateCharts();
+    // Fetch charts once when the page loads
+    fetchCharts();
 });

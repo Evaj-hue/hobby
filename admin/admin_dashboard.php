@@ -29,132 +29,207 @@ $totalProduct = $totalProductResult->fetch(PDO::FETCH_ASSOC)['total'];
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="Home" content="Everything you need to know about the system is located here: its functions, purpose, and why I've been struggling to finish this project haha">
-    <link rel="stylesheet" type="text/css" href="/idealcozydesign/css/style.css"/>
-    <link rel="stylesheet" type="text/css" href="/idealcozydesign/css/cards.css"/>
-
-    <title>Admin Side</title>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    
-    <!-- DataTables CSS -->
-    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
-    
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <title>Admin Dashboard</title>
     <style>
         body {
-            background-color: #253529 !important; /* Your original dark theme */
-            color: white;
+            background-color: #253529;
+            color: #E2E8F0;
+            font-family: Arial, sans-serif;
         }
 
-        /* Notification Card Styling */
-        .notification-card {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            background: #28a745;
-            color: white;
-            padding: 15px;
-            border-radius: 8px;
-            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
-            display: none;
-            z-index: 1000;
-            transition: all 0.5s ease-in-out;
+        .content-container {
+            margin-left: 200px;
+            margin-top: 60px;
+            padding: 20px;
         }
 
-        .card {
-            border-radius: 10px;
-            margin-bottom: 20px;
-            cursor: pointer;
-            transition: transform 0.3s ease-in-out;
-        }
-        
-        .card:hover {
-            transform: scale(1.05);
-        }
-
-        /* Widget Row Section */
-        .widget-row {
+        .widget-container {
             display: flex;
-            justify-content: space-around;
-            text-align: center;
+            justify-content: space-between;
             margin-bottom: 40px;
         }
 
         .widget {
             flex: 1;
-            margin: 10px;
+            margin: 0 10px;
+            padding: 20px;
+            background-color: #2D3748;
+            border-radius: 10px;
+            text-align: center;
+            color: white;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            text-decoration: none; /* Remove underline for links */
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
         }
 
+        .widget:hover {
+            transform: translateY(-5px); /* Hover effect */
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+        }
+
+        .widget h5 {
+            font-size: 1.2rem;
+            margin-bottom: 15px;
+        }
+
+        .widget p {
+            font-size: 2.5rem;
+            margin: 0;
+        }
+
+        .charts-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr); /* Two charts per row */
+            gap: 20px; /* Space between charts */
+        }
+
+        .chart-container {
+            background-color: #2D3748;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            padding: 20px;
+            text-align: center;
+        }
+
+        .chart-header h3 {
+            color: #ECC94B;
+            font-size: 1.5rem;
+            margin-bottom: 15px;
+        }
+
+        canvas {
+            display: block;
+            max-width: 100%;
+            max-height: 300px; /* Constrain chart height */
+        }
     </style>
 </head>
 <body>
 
-<?php include("../partials/sidebar.php"); ?> 
+<?php include("../partials/sidebar.php"); ?>
 <?php include("../partials/navbar.php"); ?>
 
-<!-- DASHBOARD CONTAINER -->
-<div class="dashboard-container">
-    <div class="dashboard-content">
+<div class="content-container">
+    <!-- Widgets Section -->
+    <div class="widget-container">
+        <a href="activity_logs.php?filter=all" class="widget bg-success text-white">
+            <h5>Total Activity Logs</h5>
+            <p><?php echo $totalActivities; ?></p>
+        </a>
+        <a href="activity_logs.php?filter=merch" class="widget bg-primary text-white">
+            <h5>Merch Activity Logs</h5>
+            <p><?php echo $totalMerch; ?></p>
+        </a>
+        <a href="activity_logs.php?filter=product" class="widget bg-warning text-dark">
+            <h5>Product Activity Logs</h5>
+            <p><?php echo $totalProduct; ?></p>
+        </a>
+    </div>
 
-        <!-- Widgets Section -->
-        <div class="container my-4">
-            <div class="row text-center">
-                <!-- Widget 1: Total Activity Logs -->
-                <div class="col-md-4">
-                    <a href="activity_logs.php?type=total" class="text-decoration-none">
-                        <div class="card bg-success text-white">
-                            <div class="card-body">
-                                <h5 class="card-title">Total Activity Logs</h5>
-                                <p class="card-text display-4"><?php echo $totalActivities; ?></p>
-                            </div>
-                        </div>
-                    </a>
-                </div>
-
-                <!-- Widget 2: Merch Activity Logs -->
-                <div class="col-md-4">
-                    <a href="activity_logs.php?type=merch" class="text-decoration-none">
-                        <div class="card bg-primary text-white">
-                            <div class="card-body">
-                                <h5 class="card-title">Merch Activity Logs</h5>
-                                <p class="card-text display-4"><?php echo $totalMerch; ?></p>
-                            </div>
-                        </div>
-                    </a>
-                </div>
-
-                <!-- Widget 3: Product Activity Logs -->
-                <div class="col-md-4">
-                    <a href="activity_logs.php?type=product" class="text-decoration-none">
-                        <div class="card bg-warning text-dark">
-                            <div class="card-body">
-                                <h5 class="card-title">Product Activity Logs</h5>
-                                <p class="card-text display-4"><?php echo $totalProduct; ?></p>
-                            </div>
-                        </div>
-                    </a>
-                </div>
-            </div>
-        </div>
-
-        <!-- Divider (Separates Activity Logs from Stock Levels) -->
-        <div class="divider"></div>
-
-        <!-- Product Stock Levels -->
-        <h1>Product Stock Levels</h1>
-        <div id="charts-container" class="charts-grid"></div>
-
-        <!-- Another Divider (Below Stock Levels) -->
-        <div class="divider"></div>
-    </div>  
+    <!-- Charts Section -->
+    <h1 class="mb-4">Product Stock Levels</h1>
+    <div class="charts-grid" id="charts-container"></div>
 </div>
 
-<!-- Scripts -->
-<script src="../scripts/fetch_charts.js"></script>
-<script src="../scripts/fetch_logs.js"></script>
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const chartsContainer = document.getElementById("charts-container");
 
+    function fetchCharts() {
+        // Clear the container before appending new charts
+        chartsContainer.innerHTML = "";
+
+        fetch("../admin/get_product_logs.php")
+            .then((response) => response.json())
+            .then((data) => {
+                // Iterate over the fetched data and create chart containers
+                Object.entries(data).forEach(([category, details]) => {
+                    const chartContainer = document.createElement("div");
+                    chartContainer.classList.add("chart-container");
+
+                    chartContainer.innerHTML = `
+                        <div class="chart-header">
+                            <h3>${category}</h3>
+                        </div>
+                        <canvas id="chart-${category}"></canvas>
+                    `;
+
+                    chartsContainer.appendChild(chartContainer);
+
+                    // Render the chart with axis labels
+                    const ctx = document.getElementById(`chart-${category}`).getContext("2d");
+                    new Chart(ctx, {
+                        type: "bar",
+                        data: {
+                            labels: details.products,
+                            datasets: [{
+                                label: "Stock Levels",
+                                data: details.stocks,
+                                backgroundColor: "rgba(72, 187, 120, 0.2)",
+                                borderColor: "rgba(72, 187, 120, 1)",
+                                borderWidth: 1
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: true, // Prevent distortion
+                            plugins: {
+                                legend: {
+                                    display: true,
+                                    labels: {
+                                        color: "#ECC94B" // Customize legend text color
+                                    }
+                                }
+                            },
+                            scales: {
+                                x: {
+                                    title: {
+                                        display: true,
+                                        text: "Products", // X-axis label
+                                        color: "#ECC94B", // Customize label color
+                                        font: {
+                                            size: 14,
+                                            weight: "bold"
+                                        }
+                                    },
+                                    ticks: {
+                                        color: "#E2E8F0", // Customize tick text color
+                                        font: {
+                                            size: 12
+                                        }
+                                    }
+                                },
+                                y: {
+                                    title: {
+                                        display: true,
+                                        text: "Stock", // Y-axis label
+                                        color: "#ECC94B", // Customize label color
+                                        font: {
+                                            size: 14,
+                                            weight: "bold"
+                                        }
+                                    },
+                                    ticks: {
+                                        color: "#E2E8F0", // Customize tick text color
+                                        font: {
+                                            size: 12
+                                        }
+                                    },
+                                    beginAtZero: true // Ensure Y-axis starts at zero
+                                }
+                            }
+                        }
+                    });
+                });
+            })
+            .catch((error) => console.error("Error fetching data:", error));
+    }
+
+    // Fetch charts once when the page loads
+    fetchCharts();
+});
+</script>
 </body>
 </html>
