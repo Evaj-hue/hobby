@@ -60,12 +60,12 @@ $totalProduct = $totalProductResult->fetch(PDO::FETCH_ASSOC)['total'];
             text-align: center;
             color: white;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-            text-decoration: none; /* Remove underline for links */
+            text-decoration: none;
             transition: transform 0.2s ease, box-shadow 0.2s ease;
         }
 
         .widget:hover {
-            transform: translateY(-5px); /* Hover effect */
+            transform: translateY(-5px);
             box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
         }
 
@@ -81,8 +81,8 @@ $totalProduct = $totalProductResult->fetch(PDO::FETCH_ASSOC)['total'];
 
         .charts-grid {
             display: grid;
-            grid-template-columns: repeat(2, 1fr); /* Two charts per row */
-            gap: 20px; /* Space between charts */
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
         }
 
         .chart-container {
@@ -102,7 +102,7 @@ $totalProduct = $totalProductResult->fetch(PDO::FETCH_ASSOC)['total'];
         canvas {
             display: block;
             max-width: 100%;
-            max-height: 300px; /* Constrain chart height */
+            max-height: 300px;
         }
     </style>
 </head>
@@ -130,21 +130,24 @@ $totalProduct = $totalProductResult->fetch(PDO::FETCH_ASSOC)['total'];
 
     <!-- Charts Section -->
     <h1 class="mb-4">Product Stock Levels</h1>
-    <div class="charts-grid" id="charts-container"></div>
+    <div class="charts-grid" id="product-charts-container"></div>
+
+    <h1 class="mb-4">Merch Stock Levels</h1>
+    <div class="charts-grid" id="merch-charts-container"></div>
 </div>
 
 <script>
 document.addEventListener("DOMContentLoaded", function () {
-    const chartsContainer = document.getElementById("charts-container");
+    const productChartsContainer = document.getElementById("product-charts-container");
+    const merchChartsContainer = document.getElementById("merch-charts-container");
 
-    function fetchCharts() {
-        // Clear the container before appending new charts
-        chartsContainer.innerHTML = "";
+    // Fetch and render product charts
+    function fetchProductCharts() {
+        productChartsContainer.innerHTML = "";
 
         fetch("../admin/get_product_logs.php")
             .then((response) => response.json())
             .then((data) => {
-                // Iterate over the fetched data and create chart containers
                 Object.entries(data).forEach(([category, details]) => {
                     const chartContainer = document.createElement("div");
                     chartContainer.classList.add("chart-container");
@@ -153,13 +156,12 @@ document.addEventListener("DOMContentLoaded", function () {
                         <div class="chart-header">
                             <h3>${category}</h3>
                         </div>
-                        <canvas id="chart-${category}"></canvas>
+                        <canvas id="product-chart-${category}"></canvas>
                     `;
 
-                    chartsContainer.appendChild(chartContainer);
+                    productChartsContainer.appendChild(chartContainer);
 
-                    // Render the chart with axis labels
-                    const ctx = document.getElementById(`chart-${category}`).getContext("2d");
+                    const ctx = document.getElementById(`product-chart-${category}`).getContext("2d");
                     new Chart(ctx, {
                         type: "bar",
                         data: {
@@ -174,12 +176,12 @@ document.addEventListener("DOMContentLoaded", function () {
                         },
                         options: {
                             responsive: true,
-                            maintainAspectRatio: true, // Prevent distortion
+                            maintainAspectRatio: true,
                             plugins: {
                                 legend: {
                                     display: true,
                                     labels: {
-                                        color: "#ECC94B" // Customize legend text color
+                                        color: "#ECC94B"
                                     }
                                 }
                             },
@@ -187,15 +189,15 @@ document.addEventListener("DOMContentLoaded", function () {
                                 x: {
                                     title: {
                                         display: true,
-                                        text: "Products", // X-axis label
-                                        color: "#ECC94B", // Customize label color
+                                        text: "Products",
+                                        color: "#ECC94B",
                                         font: {
                                             size: 14,
                                             weight: "bold"
                                         }
                                     },
                                     ticks: {
-                                        color: "#E2E8F0", // Customize tick text color
+                                        color: "#E2E8F0",
                                         font: {
                                             size: 12
                                         }
@@ -204,31 +206,120 @@ document.addEventListener("DOMContentLoaded", function () {
                                 y: {
                                     title: {
                                         display: true,
-                                        text: "Stock", // Y-axis label
-                                        color: "#ECC94B", // Customize label color
+                                        text: "Stock",
+                                        color: "#ECC94B",
                                         font: {
                                             size: 14,
                                             weight: "bold"
                                         }
                                     },
                                     ticks: {
-                                        color: "#E2E8F0", // Customize tick text color
+                                        color: "#E2E8F0",
                                         font: {
                                             size: 12
                                         }
                                     },
-                                    beginAtZero: true // Ensure Y-axis starts at zero
+                                    beginAtZero: true
                                 }
                             }
                         }
                     });
                 });
             })
-            .catch((error) => console.error("Error fetching data:", error));
+            .catch((error) => console.error("Error fetching product data:", error));
     }
 
-    // Fetch charts once when the page loads
-    fetchCharts();
+    // Fetch and render merch charts
+    function fetchMerchCharts() {
+        merchChartsContainer.innerHTML = "";
+
+        fetch("../admin/get_merch_logs.php")
+            .then((response) => response.json())
+            .then((data) => {
+                Object.entries(data).forEach(([category, details]) => {
+                    const chartContainer = document.createElement("div");
+                    chartContainer.classList.add("chart-container");
+
+                    chartContainer.innerHTML = `
+                        <div class="chart-header">
+                            <h3>${category}</h3>
+                        </div>
+                        <canvas id="merch-chart-${category}"></canvas>
+                    `;
+
+                    merchChartsContainer.appendChild(chartContainer);
+
+                    const ctx = document.getElementById(`merch-chart-${category}`).getContext("2d");
+                    new Chart(ctx, {
+                        type: "bar",
+                        data: {
+                            labels: details.products,
+                            datasets: [{
+                                label: "Stock Levels",
+                                data: details.stocks,
+                                backgroundColor: "rgba(75, 192, 192, 0.2)",
+                                borderColor: "rgba(75, 192, 192, 1)",
+                                borderWidth: 1
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: true,
+                            plugins: {
+                                legend: {
+                                    display: true,
+                                    labels: {
+                                        color: "#ECC94B"
+                                    }
+                                }
+                            },
+                            scales: {
+                                x: {
+                                    title: {
+                                        display: true,
+                                        text: "Merch Items",
+                                        color: "#ECC94B",
+                                        font: {
+                                            size: 14,
+                                            weight: "bold"
+                                        }
+                                    },
+                                    ticks: {
+                                        color: "#E2E8F0",
+                                        font: {
+                                            size: 12
+                                        }
+                                    }
+                                },
+                                y: {
+                                    title: {
+                                        display: true,
+                                        text: "Stock",
+                                        color: "#ECC94B",
+                                        font: {
+                                            size: 14,
+                                            weight: "bold"
+                                        }
+                                    },
+                                    ticks: {
+                                        color: "#E2E8F0",
+                                        font: {
+                                            size: 12
+                                        }
+                                    },
+                                    beginAtZero: true
+                                }
+                            }
+                        }
+                    });
+                });
+            })
+            .catch((error) => console.error("Error fetching merch data:", error));
+    }
+
+    // Fetch both product and merch charts
+    fetchProductCharts();
+    fetchMerchCharts();
 });
 </script>
 </body>
