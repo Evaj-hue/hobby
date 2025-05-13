@@ -82,32 +82,21 @@ button:hover {
 /* Phone Input Styling */
 .phone-input {
     display: flex;
-    gap: 10px;
-    margin-bottom: 10px;
+    align-items: center;
+    gap: 10px; /* Adds spacing between the label and the input */
 }
 
-.phone-input select {
-    width: 30%;
-    padding: 12px;
-    border: 1px solid #bbb;
-    border-radius: 5px;
-    box-sizing: border-box;
-    outline: none;
+.phone-input .country-code {
+    font-size: 1rem; /* Adjust font size */
+    font-weight: bold; /* Makes the country code bold */
+    background-color: #f0f0f0; /* Light background for better contrast */
+    padding: 5px 10px; /* Adds padding for a button-like appearance */
+    border-radius: 5px; /* Rounded corners */
+    color: #333; /* Text color */
+    display: inline-block; /* Ensures proper alignment */
 }
 
-phone-input select:focus {
-    border-color: #ED7117; /* Orange focus */
-    box-shadow: 0 0 5px rgba(237, 113, 23, 0.5);
-}
 
-.phone-input input {
-    width: 70%;
-    padding: 12px;
-    border: 1px solid #bbb;
-    border-radius: 5px;
-    box-sizing: border-box;
-    outline: none;
-}
 
 .phone-input input::placeholder {
     color: #999;

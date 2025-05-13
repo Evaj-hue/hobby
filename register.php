@@ -5,8 +5,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $username = $_POST['username'];
     $email = $_POST['email'];
     $full_name = $_POST['full_name'];
-    $country_code = $_POST['country_code'];
-    $contact_number = $country_code . $_POST['contact_number'];
+    $contact_number = $_POST['contact_number'];
+
+    // Strict Email Validation
+    if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+        die("<script>alert('Invalid email format'); window.history.back();</script>");
+    }
+
+    // Validate Philippine contact number: Starts with 0, followed by 10 digits
+    if (!preg_match('/^0\d{10}$/', $contact_number)) {
+        die("<script>alert('Invalid Philippine contact number. Must start with 0 and be 11 digits long.'); window.history.back();</script>");
+    }
 
     // Validate password with regex pattern
     if (!preg_match('/^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[!@#$%^&*:;<>,.?~`-]).{8,}$/', $_POST['password'])) {
