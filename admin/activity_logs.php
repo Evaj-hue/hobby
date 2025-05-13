@@ -19,126 +19,131 @@ $username = $user ? htmlspecialchars($user['username']) : "Unknown User";
 // Fetch activity log from the database
 $sql = "SELECT id, username, action, details, created_at FROM activity_log ORDER BY created_at DESC";
 $result = $conn->query($sql);
-?>
 
+// Updated SQL queries for Merch and Product Activity Logs
+$merchSql = "SELECT id, action, details, created_at FROM activity_log WHERE action LIKE '%merch%' ORDER BY created_at DESC";
+$productSql = "SELECT id, action, details, created_at FROM activity_log WHERE action LIKE '%product%' ORDER BY created_at DESC";
+
+// Fetch results for Merch and Product Activity Logs
+$merchResult = $conn->query($merchSql);
+$productResult = $conn->query($productSql);
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Reports Log</title>
-   <!-- Bootstrap CSS -->
-   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css">
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css">
     <!-- DataTables CSS -->
     <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css"> 
     <style>
         /* Dark Background and White Text */
-body {
-    background-color: #253529 !important;
-    color: white !important;
-}
+        body {
+            background-color: #253529 !important;
+            color: white !important;
+        }
 
-/* Sidebar & Content Spacing */
-.content {
-    margin-left: 260px;
-    padding: 80px 20px 20px;
-}
+        /* Sidebar & Content Spacing */
+        .content {
+            margin-left: 260px;
+            padding: 20px;
+        }
 
-/* Table Styling */
-table {
-    background-color: #3d4f40 !important; /* Darker green-gray */
-    color: white !important;
-    border-radius: 10px;
-    overflow: hidden;
-    width: 100%;
-    border-collapse: collapse;
-}
+        /* Table Styling */
+        table {
+            background-color: #3d4f40 !important; /* Darker green-gray */
+            color: white !important;
+            border-radius: 10px;
+            overflow: hidden;
+            width: 100%;
+            border-collapse: collapse;
+        }
 
-/* Table Header */
-thead {
-    background-color: #50624e !important;
-    font-size: 1rem;
-    font-weight: bold;
-}
+        /* Table Header */
+        thead {
+            background-color: #50624e !important;
+            font-size: 1rem;
+            font-weight: bold;
+        }
 
-/* Force White Text in Table */
-table th, table td {
-    color: white !important;
-    padding: 15px; /* More padding for better spacing */
-    text-align: center;
-    vertical-align: middle;
-    border: 1px solid #7a8c74;
-}
+        /* Force White Text in Table */
+        table th, table td {
+            color: white !important;
+            padding: 15px; /* More padding for better spacing */
+            text-align: center;
+            vertical-align: middle;
+            border: 1px solid #7a8c74;
+        }
 
-/* Hover Effect */
-table tbody tr:hover {
-    background-color: #5a6b58 !important;
-}
+        /* Hover Effect */
+        table tbody tr:hover {
+            background-color: #5a6b58 !important;
+        }
 
-/* DataTables Input & Select */
-.dataTables_wrapper input, .dataTables_wrapper select {
-    background-color: #50624e !important;
-    color: white !important;
-    border: 1px solid #7a8c74 !important;
-    padding: 5px;
-}
+        /* DataTables Input & Select */
+        .dataTables_wrapper input, .dataTables_wrapper select {
+            background-color: #50624e !important;
+            color: white !important;
+            border: 1px solid #7a8c74 !important;
+            padding: 5px;
+        }
 
-/* Responsive Table */
-@media (max-width: 768px) {
-    .content {
-        margin-left: 0;
-        padding: 80px 10px;
-    }
+        /* Scrollable Icons */
+        .scroll-icons {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 20px; /* Add spacing below the icons */
+        }
 
-    table {
-        font-size: 0.9rem;
-    }
-}
- 
+        .scroll-icons a {
+            color: white;
+            text-decoration: none;
+            background-color: #50624e;
+            padding: 10px 15px;
+            border-radius: 10px;
+            text-align: center;
+            font-size: 1rem;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
 
-/* Buttons */
-.btn-primary {
-    background-color: #ED7117 !important;
-    border-color: #7A3803 !important;
-}
+        .scroll-icons a:hover {
+            background-color: #5a6b58;
+        }
 
-.btn-primary:hover {
-    background-color: #7A3803 !important;
-}
+        /* Responsive Table */
+        @media (max-width: 768px) {
+            .content {
+                margin-left: 0;
+                padding: 80px 10px;
+            }
 
-.btn-secondary {
-    background-color: #50624e !important;
-    border-color: #7a8c74 !important;
-    color: white !important;
-}
+            .scroll-icons {
+                flex-direction: column;
+                gap: 10px;
+            }
 
-.btn-secondary:hover {
-    background-color: #5a6b58 !important;
-}
+            table {
+                font-size: 0.9rem;
+            }
+        }
     </style>
 </head>
 <body>
 
-    <!-- Toast Notification -->
-    <div class="toast-container position-fixed top-0 end-0 p-3">
-        <div id="liveToast" class="toast text-white bg-success border-0" role="alert" aria-live="assertive" aria-atomic="true">
-            <div class="d-flex">
-                <div class="toast-body">
-                    <?php if (isset($_SESSION['message'])) {
-                        echo $_SESSION['message'];
-                        unset($_SESSION['message']);
-                    } ?>
-                </div>
-                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
-            </div>
-        </div>
-    </div>
-
+    <?php include("../partials/navbar.php"); ?>
+    <?php include("../partials/sidebar.php"); ?>
     <div class="content">
-        <?php include("../partials/sidebar.php"); ?> 
-        <?php include("../partials/navbar.php"); ?> 
+        <div class="scroll-icons">
+            <a href="#userActivityTable" title="Go to User Activity">👤 User Activity</a>
+            <a href="#merchActivityLogTable" title="Go to Merch Activity">🛒 Merch</a>
+            <a href="#productActivityLogTable" title="Go to Product Activity">📦 Product</a>
+        </div>
 
-        <h2 class="text-center mb-4">Activity Reports</h2>
+        <h2 class="text-center mb-4" id="userActivityTable">User Activity Reports</h2>
         <span class="navbar-text me-3">Welcome, <?php echo $username; ?>!</span>
 
         <!-- Reports Table -->
@@ -164,26 +169,93 @@ table tbody tr:hover {
                 <?php endwhile; ?>
             </tbody>
         </table>
+
+        <hr class="my-5">
+
+        <!-- Merch Activity Logs Table -->
+        <h3 class="text-center mb-4" id="merchActivityLogTable">Merch Activity Logs</h3>
+        <table id="merchActivityTable" class="table table-bordered table-striped">
+            <thead class="table-dark">
+                <tr>
+                    <th>ID</th>
+                    <th>Action</th>
+                    <th>Details</th>
+                    <th>Created At</th>
+                </tr>
+            </thead>
+            <tbody>
+                <?php while ($row = $merchResult->fetch(PDO::FETCH_ASSOC)): ?>
+                    <tr>
+                        <td><?php echo htmlspecialchars($row['id']); ?></td>
+                        <td><?php echo htmlspecialchars($row['action']); ?></td>
+                        <td><?php echo htmlspecialchars($row['details']); ?></td>
+                        <td><?php echo htmlspecialchars($row['created_at']); ?></td>
+                    </tr>
+                <?php endwhile; ?>
+            </tbody>
+        </table>
+
+        <hr class="my-5">
+
+        <!-- Product Activity Logs Table -->
+        <h3 class="text-center mb-4" id="productActivityLogTable">Product Activity Logs</h3>
+        <table id="productActivityTable" class="table table-bordered table-striped">
+            <thead class="table-dark">
+                <tr>
+                    <th>ID</th>
+                    <th>Action</th>
+                    <th>Details</th>
+                    <th>Created At</th>
+                </tr>
+            </thead>
+            <tbody>
+                <?php while ($row = $productResult->fetch(PDO::FETCH_ASSOC)): ?>
+                    <tr>
+                        <td><?php echo htmlspecialchars($row['id']); ?></td>
+                        <td><?php echo htmlspecialchars($row['action']); ?></td>
+                        <td><?php echo htmlspecialchars($row['details']); ?></td>
+                        <td><?php echo htmlspecialchars($row['created_at']); ?></td>
+                    </tr>
+                <?php endwhile; ?>
+            </tbody>
+        </table>
     </div>
 
+    <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
-    <!-- Bootstrap JS (for Toast functionality) -->
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
     <script>
-       $(document).ready(function() {
-        // Initialize DataTables with search and pagination functionality
-        $('#activityLogTable').DataTable({
-            "paging": true,           // Enable pagination
-            "searching": true,        // Enable search bar
-            "ordering": true,         // Enable sorting
-            "info": true,             // Show table info
-            "lengthChange": true,     // Allow changing the number of entries
-            "pageLength": 10,         // Default number of rows per page
+        $(document).ready(function() {
+            // Initialize DataTables for specific tables
+            $('#activityLogTable').DataTable({
+                "paging": true,
+                "searching": true,
+                "ordering": true,
+                "info": true,
+                "lengthChange": true,
+                "pageLength": 10,
+            });
+
+            $('#merchActivityTable').DataTable({
+                "paging": true,
+                "searching": true,
+                "ordering": true,
+                "info": true,
+                "lengthChange": true,
+                "pageLength": 10,
+            });
+
+            $('#productActivityTable').DataTable({
+                "paging": true,
+                "searching": true,
+                "ordering": true,
+                "info": true,
+                "lengthChange": true,
+                "pageLength": 10,
+            });
         });
- });
     </script>
 
 </body>
