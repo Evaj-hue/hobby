@@ -13,171 +13,245 @@
   <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
   <link href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css" rel="stylesheet">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+      <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+
 
   <style>
     body {
-      background-color: #f4f6f9;
+      background-color: #253529;
+      color: #E2E8F0;
       font-family: 'Segoe UI', sans-serif;
       margin-left: 200px; /* space for sidebar */
     }
-    .monitor {
+
+    /* Widgets */
+    .widget-container {
       display: flex;
-      gap: 30px;
-      justify-content: center;
-      margin-top: 40px;
-      flex-wrap: wrap;
+      justify-content: space-between;
+      margin: 40px 20px;
     }
-    .card-box {
-      border-radius: 16px;
+
+    .widget {
+      flex: 1;
+      margin: 0 10px;
       padding: 20px;
-      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+      background-color: #2D3748;
+      border-radius: 10px;
       text-align: center;
-      height: 220px;
+      color: white;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+      text-decoration: none;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
     }
-    .weight-box { background-color: #fff3cd; }
-    .item-box { background-color: #d1e7dd; }
-    .label { font-size: 1.2rem; font-weight: 600; margin-bottom: 10px; }
-    .value { font-size: 2.5rem; font-weight: bold; }
-    .graph-section {
-      display: flex;
-      gap: 30px;
-      justify-content: center;
-      flex-wrap: wrap;
-      margin: 50px auto;
-      max-width: 1100px;
+
+    .widget:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
     }
-    .graph-container {
-      display: flex;
-      justify-content: center;
-      gap: 30px;
-      margin: 40px auto;
-      flex-wrap: wrap;
+
+    .widget h5 {
+      font-size: 1.2rem;
+      margin-bottom: 15px;
     }
-    .graph-box {
-      width: 400px;
+
+    .widget p {
+      font-size: 2.5rem;
+      margin: 0;
     }
+
+    /* Charts */
+    .charts-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 20px;
+      margin: 20px 20px;
+    }
+
+    .chart-container {
+      background-color: #2D3748;
+      border-radius: 10px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+      padding: 20px;
+      text-align: center;
+    }
+
+    .chart-header h3 {
+      color: #ECC94B;
+      font-size: 1.5rem;
+      margin-bottom: 15px;
+    }
+
+    canvas {
+      display: block;
+      max-width: 100%;
+      max-height: 300px;
+    }
+
+    /* Tables */
     .table-container {
       width: calc(100% - 220px);
       margin: 30px auto;
     }
+
+    .table {
+      background-color: #3d4f40;
+      color: #E2E8F0;
+      border-radius: 10px;
+      overflow: hidden;
+    }
+
     .table th {
-      background-color: #007bff;
-      color: white;
+      background-color: #50624e;
+      color: #ECC94B;
     }
-    .btns {
-      text-align: center;
-      margin-bottom: 20px;
+
+    .table tbody tr:hover {
+      background-color: #5a6b58;
     }
-    
+
+    /* DataTables - Dark Theme */
+    .dataTables_wrapper {
+      color: #E2E8F0;
+    }
+
+    .dataTables_filter input {
+      background-color: #50624e;
+      color: #E2E8F0;
+      border: 1px solid #7a8c74;
+    }
+
+    .dataTables_length select {
+      background-color: #50624e;
+      color: #E2E8F0;
+      border: 1px solid #7a8c74;
+    }
+
+    .dataTables_paginate .paginate_button {
+      background-color: #50624e;
+      color: #E2E8F0 !important;
+      border: 1px solid #7a8c74;
+    }
+
+    .dataTables_paginate .paginate_button:hover {
+      background-color: #5a6b58;
+      color: #ECC94B !important;
+    }
+
+    .dataTables_info {
+      color: #E2E8F0;
+    }
+
+    .table-warning {
+      background-color: #f8d7da !important;
+      color: #721c24;
+    }
   </style>
 </head>
 <body>
-<?php include("../partials/user_sidebar.php"); ?> <!-- Sidebar included -->
+<?php include("../partials/sidebar.php"); ?>
 
-  <h2 class="text-center mt-4">📦 CozyRack - Real-Time Load Cell Monitor</h2>
+<h2 class="text-center mt-4">📦 CozyRack - Real-Time Load Cell Monitor</h2>
 
-  <!-- Info Boxes -->
-  <div class="monitor">
-    <div class="card-box weight-box">
-      <div class="label">Real-Time Weight</div>
-      <div id="weight" class="value">0.00 kg</div>
+<!-- Widgets Section -->
+<div class="widget-container">
+    <div class="widget bg-success text-white">
+        <h5>Real-Time Weight</h5>
+        <p id="weight">0.00 kg</p>
     </div>
-    <div class="card-box item-box">
-      <div class="label">Total Items</div>
-      <div id="items" class="value">0</div>
+    <div class="widget bg-primary text-white">
+        <h5>Total Items</h5>
+        <p id="items">0</p>
     </div>
-  </div>
+</div>
 
-  <!-- Graphs -->
-  <div class="graph-container">
-    <div class="graph-box">
-      <canvas id="weightChart"></canvas>
+<!-- Graphs Section -->
+<h1 class="text-center mb-4">Real-Time Data</h1>
+<div class="charts-grid">
+    <div class="chart-container">
+        <div class="chart-header">
+            <h3>Weight</h3>
+        </div>
+        <canvas id="weightChart"></canvas>
     </div>
-    <div class="graph-box">
-      <canvas id="itemChart"></canvas>
+    <div class="chart-container">
+        <div class="chart-header">
+            <h3>Item Count</h3>
+        </div>
+        <canvas id="itemChart"></canvas>
     </div>
-  </div>
+</div>
 
-  <!-- Buttons -->
-  <div class="btns">
-    <button class="btn btn-primary" onclick="downloadCSV()">Export Graph Data as CSV</button>
-    <button class="btn btn-secondary" onclick="downloadPNG()">Download Graph as PNG</button>
-    <button class="btn btn-danger" onclick="resetGraphs()">Reset Graph</button>
-  </div>
+<!-- Weight Changes Table -->
+<div class="table-container">
+  <h3 class="text-center mb-4">📊 Weight Changes History</h3>
+  <table id="weightChangesTable" class="table table-bordered text-center">
+    <thead>
+      <tr>
+        <th>#</th>
+        <th>Weight (kg)</th>
+        <th>Time</th>
+        <th>Date</th>
+        <th>Item Count</th>
+        <th>Operation</th>
+      </tr>
+    </thead>
+    <tbody>
+      <!-- Data from AJAX will go here -->
+    </tbody>
+  </table>
+</div>
 
-  <!-- Weight changes table -->
-  <div class="table-container">
-    <h3 class="text-center mb-4">📊 Weight Changes History</h3>
-    <table id="weightChangesTable" class="table table-bordered text-center">
-      <thead>
-        <tr>
-          <th>#</th>
-          <th>Weight (kg)</th>
-          <th>Time</th>
-          <th>Date</th>
-          <th>Item Count</th>
-          <th>Operation</th>
-        </tr>
-      </thead>
-      <tbody>
-        <!-- Data from AJAX will go here -->
-      </tbody>
-    </table>
-  </div>
-  <div id="warningBox" class="alert alert-warning text-center" style="display: none;"></div>
-
-  <div class="table-container">
-    <div class="container">
-      <div class="d-flex justify-content-between align-items-center mb-4">
-        <a href="all_warnings.php" class="btn btn-outline-danger">
-          🔍 View All Warnings</a>
-        <h4 class="text-center text-danger">⚠️ Unrecognized Weight Warnings</h4>
-        <div></div> <!-- Spacer to keep title centered -->
-      </div>
-    </div>
-    <table id="warningsTable" class="table table-bordered table-sm">
-      <thead>
-        <tr>
-          <th>ID</th>
-          <th>Weight (kg)</th>
-          <th>Message</th>
-          <th>Time</th>
-          <th>Date</th>
-        </tr>
-      </thead>
-      <tbody id="warningTableBody"></tbody>
-    </table>
-  </div>
+<!-- Warnings Table -->
+<div class="table-container">
+  <h3 class="text-center text-danger">⚠️ Unrecognized Weight Warnings</h3>
+  <table id="warningsTable" class="table table-bordered table-sm table-warning">
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Weight (kg)</th>
+        <th>Message</th>
+        <th>Time</th>
+        <th>Date</th>
+      </tr>
+    </thead>
+    <tbody>
+      <!-- Data from AJAX will go here -->
+    </tbody>
+  </table>
+</div>
 
 <script>
   $(document).ready(function() {
-    // Initialize DataTable for both tables
+    // Initialize DataTables with dark theme
     $('#weightChangesTable').DataTable({
-      "searching": true, // Enable search
-      "paging": true,    // Enable paging
-      "pageLength": 5,   // Default number of rows per page
-      "lengthMenu": [5, 10, 20] // Options for rows per page
+      "searching": true,
+      "paging": true,
+      "pageLength": 5,
+      "lengthMenu": [5, 10, 20]
     });
 
     $('#warningsTable').DataTable({
-      "searching": true, // Enable search
-      "paging": true,    // Enable paging
-      "pageLength": 5,   // Default number of rows per page
-      "lengthMenu": [5, 10, 20] // Options for rows per page
+      "searching": true,
+      "paging": true,
+      "pageLength": 5,
+      "lengthMenu": [5, 10, 20]
     });
   });
 
-  // Your existing refreshDisplay, filterTable, and other functions remain the same
   let lastWeight = 0;
   let lastItemCount = 0;
   const weightData = [], itemData = [], labels = [];
 
   const weightChart = new Chart(document.getElementById('weightChart'), {
-    type: 'line', data: { labels, datasets: [{ label: 'Weight (kg)', data: weightData, borderColor: 'orange', fill: false }] }, options: { responsive: true }
+    type: 'line',
+    data: { labels, datasets: [{ label: 'Weight (kg)', data: weightData, borderColor: 'orange', fill: false }] },
+    options: { responsive: true }
   });
 
   const itemChart = new Chart(document.getElementById('itemChart'), {
-    type: 'line', data: { labels, datasets: [{ label: 'Item Count', data: itemData, borderColor: 'green', fill: false }] }, options: { responsive: true }
+    type: 'line',
+    data: { labels, datasets: [{ label: 'Item Count', data: itemData, borderColor: 'green', fill: false }] },
+    options: { responsive: true }
   });
 
   function refreshDisplay() {
@@ -210,10 +284,10 @@
       }
     });
 
-    // Update table
+    // Update Weight Changes Table
     $.get('fetch_weight_changes.php', function(data) {
-      $('#weightChangesTable').DataTable().clear().draw();  // Clear existing data
-      $('#weightChangesTable').DataTable().rows.add($(data)).draw();  // Add new data to the table
+      $('#weightChangesTable').DataTable().clear().draw();
+      $('#weightChangesTable').DataTable().rows.add($(data)).draw();
     });
   }
 
@@ -229,8 +303,7 @@
   setInterval(refreshWarnings, 5000);
   refreshDisplay();
   refreshWarnings();
-  
-  // Download CSV function
+
   function downloadCSV() {
     let csv = 'Timestamp,Weight,Item Count\n';
     for (let i = 0; i < labels.length; i++) {
@@ -239,22 +312,21 @@
     const blob = new Blob([csv], { type: 'text/csv' });
     const link = document.createElement('a');
     link.href = URL.createObjectURL(blob);
-    const today = new Date().toISOString().slice(0, 10);
-    link.download = `rack_data_${today}.csv`;
+    link.download = `rack_data_${new Date().toISOString().slice(0, 10)}.csv`;
     link.click();
   }
 
   function downloadPNG() {
     const today = new Date().toISOString().slice(0, 10);
-    const link1 = document.createElement('a');
-    link1.download = `rack_weight_graph_${today}.png`;
-    link1.href = weightChart.toBase64Image();
-    link1.click();
+    const weightLink = document.createElement('a');
+    weightLink.download = `rack_weight_graph_${today}.png`;
+    weightLink.href = weightChart.toBase64Image();
+    weightLink.click();
 
-    const link2 = document.createElement('a');
-    link2.download = `rack_item_graph_${today}.png`;
-    link2.href = itemChart.toBase64Image();
-    link2.click();
+    const itemLink = document.createElement('a');
+    itemLink.download = `rack_item_graph_${today}.png`;
+    itemLink.href = itemChart.toBase64Image();
+    itemLink.click();
   }
 
   function resetGraphs() {
@@ -263,6 +335,5 @@
     itemChart.update();
   }
 </script>
-
 </body>
 </html>
