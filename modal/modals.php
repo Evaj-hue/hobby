@@ -476,7 +476,7 @@
                     <div class="mb-3">
                         <label for="edit_category" class="form-label">Category</label>
                         <select name="category" id="edit_category" class="form-select" required>
-                            <option value="apparels">Apparels</option>
+                            <option value="Tote Bags">Tote Bags</option>
                             <option value="coffee Cups">Coffee Cups</option>
                             <option value="posters">Posters</option>
                             <option value="accesories">Accessories</option>
