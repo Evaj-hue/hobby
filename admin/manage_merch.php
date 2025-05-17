@@ -87,6 +87,8 @@ if (isset($_POST['add_merch'])) {
     $price = $_POST['price'];
     $stock_quantity = $_POST['stock_quantity'];
     $category = $_POST['category'];
+    $max_stock = $_POST['max_stock'];
+    $stock_threshold = $_POST['stock_threshold'];
 
     // Handle file upload
     $image = $_FILES['image'];
@@ -95,7 +97,8 @@ if (isset($_POST['add_merch'])) {
     // Resize the image before saving
     resizeImage($image['tmp_name'], $image_path, 200, 200);
 
-    $sql = "INSERT INTO merch_products (product_name, description, price, stock_quantity, category, image) VALUES (:product_name, :description, :price, :stock_quantity, :category, :image)";
+    $sql = "INSERT INTO merch_products (product_name, description, price, stock_quantity, category, image, max_stock, stock_threshold) 
+            VALUES (:product_name, :description, :price, :stock_quantity, :category, :image, :max_stock, :stock_threshold)";
     $stmt = $conn->prepare($sql);
     $stmt->execute([
         ':product_name' => $product_name,
@@ -103,7 +106,9 @@ if (isset($_POST['add_merch'])) {
         ':price' => $price,
         ':stock_quantity' => $stock_quantity,
         ':category' => $category,
-        ':image' => $image_path
+        ':image' => $image_path,
+        ':max_stock' => $max_stock,
+        ':stock_threshold' => $stock_threshold
     ]);
 
     logActivity($userId, "added merch product", "Product: $product_name, Category: $category");
@@ -120,6 +125,8 @@ if (isset($_POST['edit_merch'])) {
     $price = $_POST['price'];
     $stock_quantity = $_POST['stock_quantity'];
     $category = $_POST['category'];
+    $max_stock = $_POST['max_stock'];
+    $stock_threshold = $_POST['stock_threshold'];
 
     // Handle new image upload if provided
     if (!empty($_FILES['image']['name'])) {
@@ -129,7 +136,9 @@ if (isset($_POST['edit_merch'])) {
         // Resize the image before saving
         resizeImage($image['tmp_name'], $image_path, 200, 200);
 
-        $sql = "UPDATE merch_products SET product_name = :product_name, description = :description, price = :price, stock_quantity = :stock_quantity, category = :category, image = :image WHERE product_id = :product_id";
+        $sql = "UPDATE merch_products SET product_name = :product_name, description = :description, price = :price, 
+                stock_quantity = :stock_quantity, category = :category, image = :image, 
+                max_stock = :max_stock, stock_threshold = :stock_threshold WHERE product_id = :product_id";
         $stmt = $conn->prepare($sql);
         $stmt->execute([
             ':product_name' => $product_name,
@@ -138,10 +147,14 @@ if (isset($_POST['edit_merch'])) {
             ':stock_quantity' => $stock_quantity,
             ':category' => $category,
             ':image' => $image_path,
+            ':max_stock' => $max_stock,
+            ':stock_threshold' => $stock_threshold,
             ':product_id' => $product_id
         ]);
     } else {
-        $sql = "UPDATE merch_products SET product_name = :product_name, description = :description, price = :price, stock_quantity = :stock_quantity, category = :category WHERE product_id = :product_id";
+        $sql = "UPDATE merch_products SET product_name = :product_name, description = :description, price = :price, 
+                stock_quantity = :stock_quantity, category = :category, 
+                max_stock = :max_stock, stock_threshold = :stock_threshold WHERE product_id = :product_id";
         $stmt = $conn->prepare($sql);
         $stmt->execute([
             ':product_name' => $product_name,
@@ -149,6 +162,8 @@ if (isset($_POST['edit_merch'])) {
             ':price' => $price,
             ':stock_quantity' => $stock_quantity,
             ':category' => $category,
+            ':max_stock' => $max_stock,
+            ':stock_threshold' => $stock_threshold,
             ':product_id' => $product_id
         ]);
     }
@@ -257,6 +272,21 @@ $result = $conn->query($sql);
         .toast-container {
             z-index: 1050; /* Ensure toast notifications are in front of the navbar */
         }
+
+        /* Styling for highlighted rows */
+        .highlighted-row {
+            background-color: #4caf50 !important;
+        }
+        
+        .highlight-pulse {
+            animation: pulse-animation 1.5s ease-in-out infinite;
+        }
+        
+        @keyframes pulse-animation {
+            0% { background-color: #3d4f40; }
+            50% { background-color: #4caf5080; }
+            100% { background-color: #3d4f40; }
+        }
     </style>
 </head>
 <body>
@@ -290,6 +320,8 @@ $result = $conn->query($sql);
                     <th>Description</th>
                     <th>Price</th>
                     <th>Stock</th>
+                    <th>Max Stock</th>
+                    <th>Threshold</th>
                     <th>Category</th>
                     <th>Image</th>
                     <th>Actions</th>
@@ -303,6 +335,8 @@ $result = $conn->query($sql);
                         <td><?= htmlspecialchars($row['description']); ?></td>
                         <td><?= htmlspecialchars($row['price']); ?></td>
                         <td><?= htmlspecialchars($row['stock_quantity']); ?></td>
+                        <td><?= htmlspecialchars($row['max_stock'] ?? 'Not set'); ?></td>
+                        <td><?= htmlspecialchars($row['stock_threshold'] ?? 'Not set'); ?></td>
                         <td><?= htmlspecialchars($row['category']); ?></td>
                         <td><img src="<?= htmlspecialchars($row['image']); ?>" width="50"></td>
                         <td>
@@ -312,6 +346,8 @@ $result = $conn->query($sql);
                                     data-description="<?= $row['description']; ?>" 
                                     data-price="<?= $row['price']; ?>" 
                                     data-stock="<?= $row['stock_quantity']; ?>" 
+                                    data-max-stock="<?= $row['max_stock'] ?? ''; ?>"
+                                    data-threshold="<?= $row['stock_threshold'] ?? ''; ?>"
                                     data-category="<?= $row['category']; ?>">Edit</button>
                             <form method="POST" style="display:inline;">
                                 <input type="hidden" name="product_id" value="<?= $row['product_id']; ?>">
@@ -331,7 +367,7 @@ $result = $conn->query($sql);
     <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
     <script>
         $(document).ready(function() {
-            $('#merchTable').DataTable();
+            let merchTable = $('#merchTable').DataTable();
 
             var toastEl = document.getElementById('liveToast');
             if (toastEl && toastEl.querySelector('.toast-body').textContent.trim() !== '') {
@@ -350,11 +386,63 @@ $result = $conn->query($sql);
                 modal.find('#edit_description').val(button.data('description'));
                 modal.find('#edit_price').val(button.data('price'));
                 modal.find('#edit_stock_quantity').val(button.data('stock'));
+                modal.find('#edit_merch_max_stock').val(button.data('max-stock'));
+                modal.find('#edit_merch_stock_threshold').val(button.data('threshold'));
                 modal.find('#edit_category').val(button.data('category'));
 
                 // Ensure the image upload field is reset
                 modal.find('#edit_image').val('');
+                
+                // If max stock exists but threshold doesn't, auto-calculate threshold
+                var maxStock = button.data('max-stock');
+                var threshold = button.data('threshold');
+                if (maxStock && !threshold) {
+                    calculateThreshold('edit_merch_max_stock', 'edit_merch_stock_threshold');
+                }
             });
+            
+            // Set default max stock value for new products if stock value is entered
+            $('#stock_quantity').on('change', function() {
+                const stockValue = parseInt($(this).val());
+                if (!isNaN(stockValue) && stockValue > 0 && $('#merch_max_stock').val() === '') {
+                    // Set max stock to 150% of current stock by default
+                    $('#merch_max_stock').val(Math.round(stockValue * 1.5));
+                    // Then trigger threshold calculation
+                    calculateThreshold('merch_max_stock', 'merch_stock_threshold');
+                }
+            });
+            
+            // Check for highlight parameter in URL and scroll to that row
+            const urlParams = new URLSearchParams(window.location.search);
+            const highlightId = urlParams.get('highlight');
+            
+            if (highlightId) {
+                // Search for the product in the DataTable
+                merchTable.search(highlightId).draw();
+                
+                // Find the row with the matching ID
+                const $row = $(`td:contains(${highlightId})`).first().parent('tr');
+                
+                if ($row.length) {
+                    // Highlight the row
+                    $row.addClass('highlighted-row');
+                    
+                    // Scroll to the row
+                    $('html, body').animate({
+                        scrollTop: $row.offset().top - 100
+                    }, 500);
+                    
+                    // Add a temporary highlight effect
+                    setTimeout(function() {
+                        $row.removeClass('highlighted-row');
+                        $row.addClass('highlight-pulse');
+                        
+                        setTimeout(function() {
+                            $row.removeClass('highlight-pulse');
+                        }, 3000);
+                    }, 500);
+                }
+            }
         });
     </script>
 </body>
