@@ -6,9 +6,11 @@
     <a href="../admin/admin_dashboard.php">Dashboard</a>
     <a href="../rack/rack_dashboard.php">Manage Racks</a>
     <a href="../admin/manage_roles.php">Role Management</a>
+        <a href="../doordb/index.php">Manage Door Lock</a>
     <a href="../admin/manage_products.php">Manage Products</a>
     <a href="../admin/manage_merch.php">Manage Merch</a>
     <a href="../admin/activity_logs.php">Reports</a>
+
     <a href="../logout.php">Logout</a>
 </div>
 

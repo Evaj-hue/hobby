@@ -288,13 +288,16 @@
         let activityCount = 0;
         let stockCount = 0;
 
+        // Get the base URL for the application
+        const baseUrl = window.location.origin + '/idealcozydesign/';
+
         // Retrieve the last seen timestamp from local storage (default to 0 if not found)
         let lastSeenTimestamp = localStorage.getItem(LOCAL_STORAGE_KEY) || 0;
 
         // Fetch activity notifications
         async function fetchNotifications() {
             try {
-                const response = await fetch(`../admin/get_notificationlogs.php?last_seen=${lastSeenTimestamp}`);
+                const response = await fetch(`${baseUrl}admin/get_notificationlogs.php?last_seen=${lastSeenTimestamp}`);
                 const logs = await response.json();
 
                 if (logs.error) {
@@ -315,7 +318,7 @@
                             <strong>${log.action}</strong>
                             <span class="details">${log.details}</span>
                             <span class="timestamp">${timestamp.toLocaleString()}</span>
-                            <a href="activity_logs.php?user=${log.username}" class="alert-link">View All by ${log.username}</a>
+                            <a href="${baseUrl}admin/activity_logs.php?user=${log.username}" class="alert-link">View All by ${log.username}</a>
                         `;
                         notificationList.appendChild(li);
                     });
@@ -339,7 +342,7 @@
         // Fetch low stock items
         async function fetchLowStockItems() {
             try {
-                const response = await fetch('../admin/get_low_stock.php');
+                const response = await fetch(`${baseUrl}admin/get_low_stock.php`);
                 const data = await response.json();
 
                 stockNotificationList.innerHTML = ""; // Clear current low stock items
@@ -372,7 +375,7 @@
                             <span class="${colorClass}">${item.units_in_stock} units left</span>
                             <span class="details">Threshold: ${item.stock_threshold} | Max: ${item.max_stock || 'Not set'}</span>
                             <span class="text-warning">Suggested reorder: ${item.reorder_amount} units</span>
-                            <a href="${item.type === 'product' ? 'manage_products.php' : 'manage_merch.php'}?highlight=${item.id}" 
+                            <a href="${baseUrl}admin/${item.type === 'product' ? 'manage_products.php' : 'manage_merch.php'}?highlight=${item.id}" 
                                class="alert-link">Manage Item</a>
                         `;
                         stockNotificationList.appendChild(li);
@@ -405,8 +408,18 @@
             if (isOpen) {
                 notificationDropdown.classList.add('show');
                 notificationIcon.classList.add('active');
-                if (notificationBadge.style.display !== 'none') {
-                    notificationBadge.classList.add('active');
+                
+                // Hide the badge when dropdown is opened
+                notificationBadge.style.display = "none";
+                
+                // Save current notification state
+                if (activityCount > 0 || stockCount > 0) {
+                    // Save the last seen timestamp to local storage
+                    localStorage.setItem(LOCAL_STORAGE_KEY, lastSeenTimestamp);
+                    
+                    // Reset the counts as they've been viewed
+                    activityCount = 0;
+                    stockCount = 0;
                 }
             } else {
                 notificationDropdown.classList.remove('show');
@@ -419,18 +432,12 @@
         notificationIcon.addEventListener("click", function(e) {
             e.stopPropagation();
             isDropdownOpen = !isDropdownOpen;
-            
             toggleNotificationDropdown(isDropdownOpen);
-
-            if (isDropdownOpen) {
-                // Save the last seen timestamp to local storage
-                localStorage.setItem(LOCAL_STORAGE_KEY, lastSeenTimestamp);
-            }
         });
 
         // Close dropdown if clicked outside
         document.addEventListener("click", function(event) {
-            if (isDropdownOpen && !notificationDropdown.contains(event.target)) {
+            if (isDropdownOpen && !notificationDropdown.contains(event.target) && event.target !== notificationIcon) {
                 isDropdownOpen = false;
                 toggleNotificationDropdown(false);
             }
@@ -459,6 +466,9 @@
                 document.getElementById(targetId).classList.add('active');
             });
         });
+
+        // Fix the View All Activity link
+        document.getElementById("view-all-link").href = baseUrl + "admin/activity_logs.php";
 
         // Fetch data on page load
         fetchNotifications();

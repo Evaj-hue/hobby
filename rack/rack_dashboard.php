@@ -14,11 +14,14 @@
   <link href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css" rel="stylesheet">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-  <style>
+         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+
+ <style>
     body {
       background-color: #f4f6f9;
       font-family: 'Segoe UI', sans-serif;
       margin-left: 200px; /* space for sidebar */
+      padding-top: 60px; /* Space for fixed navbar */
     }
     .monitor {
       display: flex;
@@ -73,138 +76,176 @@
       text-align: center;
       margin-bottom: 20px;
     }
+    
+    /* Updated styling for navbar integration */
+    body {
+      background-color: #f4f6f9;
+      font-family: 'Segoe UI', sans-serif;
+      margin-left: 200px; /* space for sidebar */
+      padding-top: 60px; /* Space for fixed navbar */
+    }
+    
+    .main-content {
+      padding: 20px;
+      transition: margin-left 0.3s ease;
+    }
+    
+    @media (max-width: 768px) {
+      body {
+        margin-left: 0;
+      }
+      .table-container {
+        width: 95%;
+      }
+    }
+    
+    /* Dark mode compatibility for navbar */
+    .dark-mode-compatible {
+      background-color: #253529;
+      color: white;
+    }
+    
+    /* Ensure consistent spacing with navbar */
+    .container-fluid {
+      padding-top: 20px;
+    }
   </style>
 </head>
 <body>
-<?php include("../partials/sidebar.php"); ?> 
+  <?php include("../partials/navbar.php"); ?>
+  <?php include("../partials/sidebar.php"); ?> 
 
-  <h2 class="text-center mt-4">📦 CozyRack - Real-Time Load Cell Monitor</h2>
-  <div class="container my-4 d-flex justify-content-between align-items-center">
-  <button class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#rackSettingsModal">
-    ⚙️ Rack Settings
-  </button>
-  
-  <div class="d-flex align-items-center">
-    <!-- Metric System Dropdown -->
-    <div class="metric-selector me-3">
-      <label for="metricSystem" class="form-label me-2">Metric System:</label>
-      <select id="metricSystem" class="form-select form-select-sm" style="width: 150px; display: inline-block">
-        <option value="kg" selected>Kilograms (kg)</option>
-        <option value="g">Grams (g)</option>
-        <option value="ml">Milliliters (ml)</option>
-        <option value="l">Liters (l)</option>
-      </select>
-    </div>
-    
-    <!-- NEW: Chart Time Range Selector -->
-    <div class="time-range-selector">
-      <label for="timeRange" class="form-label me-2">Chart Range:</label>
-      <select id="timeRange" class="form-select form-select-sm" style="width: 120px; display: inline-block">
-        <option value="30">30 seconds</option>
-        <option value="60" selected>1 minute</option>
-        <option value="300">5 minutes</option>
-        <option value="900">15 minutes</option>
-        <option value="1800">30 minutes</option>
-      </select>
-    </div>
-  </div>
-</div>
- 
-  <!-- Info Boxes -->
-  <div class="monitor">
-    <div class="card-box weight-box">
-      <div class="label">Real-Time Weight</div>
-      <div id="weight" class="value">0.00 kg</div>
-    </div>
-    <div class="card-box item-box">
-      <div class="label">Total Items</div>
-      <div id="items" class="value">0</div>
-    </div>
-    <div class="card-box unrecognized-box">
-      <div class="label">Unrecognized Weight</div>
-      <div id="unrecognized" class="value">0</div>
-    </div>
-    <!-- New Widget: Specified Weight Items -->
-    <div class="card-box specified-box">
-      <div class="label">Specified Weight Items</div>
-      <div id="specifiedItems" class="value">0</div>
-      <div class="small text-muted">Maximum number of standard items that can be extracted</div>
-    </div>
-  </div>
-  <!-- Graphs -->
-  <div class="graph-container">
-    <div class="graph-box">
-      <canvas id="weightChart"></canvas>
-    </div>
-    <div class="graph-box">
-      <canvas id="itemChart"></canvas>
-    </div>
-  </div>
-
-  <!-- Buttons -->
-  <div class="btns">
-    <button class="btn btn-primary" onclick="downloadCSV()">Export Graph Data as CSV</button>
-    <button class="btn btn-secondary" onclick="downloadPNG()">Download Graph as PNG</button>
-    <button class="btn btn-danger" onclick="resetGraphs()">Reset Graph</button>
-  </div>
-
-  <!-- Weight changes table -->
-  <div class="table-container">
-    <h3 class="text-center mb-4">📊 Weight Changes History</h3>
-    <table id="weightChangesTable" class="table table-bordered text-center">
-      <thead>
-        <tr>
-          <th>#</th>
-          <th>Weight (kg)</th>
-          <th>Time</th>
-          <th>Date</th>
-          <th>Item Count</th>
-          <th>Operation</th>
-        </tr>
-      </thead>
-      <tbody>
-        <!-- Data from AJAX will go here -->
-      </tbody>
-    </table>
-  </div>
-  <div id="warningBox" class="alert alert-warning text-center" style="display: none;"></div>
-
-  <div class="table-container">
-    <div class="container">
-      <div class="d-flex justify-content-between align-items-center mb-4">
-        <a href="all_warnings.php" class="btn btn-outline-danger">
-          🔍 View All Warnings</a>
-        <h4 class="text-center text-danger">⚠️ Unrecognized Weight Warnings</h4>
-        <div></div> <!-- Spacer to keep title centered -->
+  <div class="main-content">
+    <h2 class="text-center mt-4">📦 CozyRack - Real-Time Load Cell Monitor</h2>
+    <div class="container my-4 d-flex justify-content-between align-items-center">
+      <button class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#rackSettingsModal">
+        ⚙️ Rack Settings
+      </button>
+      
+      <div class="d-flex align-items-center">
+        <!-- Metric System Dropdown -->
+        <div class="metric-selector me-3">
+          <label for="metricSystem" class="form-label me-2">Metric System:</label>
+          <select id="metricSystem" class="form-select form-select-sm" style="width: 150px; display: inline-block">
+            <option value="kg" selected>Kilograms (kg)</option>
+            <option value="g">Grams (g)</option>
+            <option value="ml">Milliliters (ml)</option>
+            <option value="l">Liters (l)</option>
+          </select>
+        </div>
+        
+        <!-- Chart Time Range Selector -->
+        <div class="time-range-selector">
+          <label for="timeRange" class="form-label me-2">Chart Range:</label>
+          <select id="timeRange" class="form-select form-select-sm" style="width: 120px; display: inline-block">
+            <option value="30">30 seconds</option>
+            <option value="60" selected>1 minute</option>
+            <option value="300">5 minutes</option>
+            <option value="900">15 minutes</option>
+            <option value="1800">30 minutes</option>
+          </select>
+        </div>
       </div>
     </div>
-    <table id="warningsTable" class="table table-bordered table-sm">
-      <thead>
-        <tr>
-          <th>ID</th>
-          <th>Weight (kg)</th>
-          <th>Message</th>
-          <th>Time</th>
-          <th>Date</th>
-        </tr>
-      </thead>
-      <tbody id="warningTableBody"></tbody>
-    </table>
+   
+    <!-- Info Boxes -->
+    <div class="monitor">
+      <div class="card-box weight-box">
+        <div class="label">Real-Time Weight</div>
+        <div id="weight" class="value">0.00 kg</div>
+      </div>
+      <div class="card-box item-box">
+        <div class="label">Total Items</div>
+        <div id="items" class="value">0</div>
+      </div>
+      <div class="card-box unrecognized-box">
+        <div class="label">Unrecognized Weight</div>
+        <div id="unrecognized" class="value">0</div>
+      </div>
+      <!-- New Widget: Specified Weight Items -->
+      <div class="card-box specified-box">
+        <div class="label">Specified Weight Items</div>
+        <div id="specifiedItems" class="value">0</div>
+        <div class="small text-muted">Maximum number of standard items that can be extracted</div>
+      </div>
+    </div>
+    <!-- Graphs -->
+    <div class="graph-container">
+      <div class="graph-box">
+        <canvas id="weightChart"></canvas>
+      </div>
+      <div class="graph-box">
+        <canvas id="itemChart"></canvas>
+      </div>
+    </div>
+
+    <!-- Buttons -->
+    <div class="btns">
+      <button class="btn btn-primary" onclick="downloadCSV()">Export Graph Data as CSV</button>
+      <button class="btn btn-secondary" onclick="downloadPNG()">Download Graph as PNG</button>
+      <button class="btn btn-danger" onclick="resetGraphs()">Reset Graph</button>
+    </div>
+
+    <!-- Weight changes table -->
+    <div class="table-container">
+      <h3 class="text-center mb-4">📊 Weight Changes History</h3>
+      <table id="weightChangesTable" class="table table-bordered text-center">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Weight (kg)</th>
+            <th>Time</th>
+            <th>Date</th>
+            <th>Item Count</th>
+            <th>Operation</th>
+          </tr>
+        </thead>
+        <tbody>
+          <!-- Data from AJAX will go here -->
+        </tbody>
+      </table>
+    </div>
+    <div id="warningBox" class="alert alert-warning text-center" style="display: none;"></div>
+
+    <div class="table-container">
+      <div class="container">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+          <a href="all_warnings.php" class="btn btn-outline-danger">
+            🔍 View All Warnings</a>
+          <h4 class="text-center text-danger">⚠️ Unrecognized Weight Warnings</h4>
+          <div></div> <!-- Spacer to keep title centered -->
+        </div>
+      </div>
+      <table id="warningsTable" class="table table-bordered table-sm">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Weight (kg)</th>
+            <th>Message</th>
+            <th>Time</th>
+            <th>Date</th>
+          </tr>
+        </thead>
+        <tbody id="warningTableBody"></tbody>
+      </table>
+    </div>
+    <!-- Debug links for troubleshooting -->
+    <div class="container my-2">
+      <div class="text-center">
+        <a href="debug_data.php" target="_blank" class="btn btn-sm btn-info">Debug Database</a>
+        <a href="getvalue.php" target="_blank" class="btn btn-sm btn-secondary">Test API Response</a>
+        <a href="debug_warnings.php" target="_blank" class="btn btn-sm btn-warning">Debug Warnings</a>
+        <button id="simulateUnrecognized" class="btn btn-sm btn-danger">Simulate Unrecognized Weight</button>
+      </div>
+    </div>
   </div>
-<!-- Debug links for troubleshooting -->
-<div class="container my-2">
-  <div class="text-center">
-    <a href="debug_data.php" target="_blank" class="btn btn-sm btn-info">Debug Database</a>
-    <a href="getvalue.php" target="_blank" class="btn btn-sm btn-secondary">Test API Response</a>
-  </div>
-</div>
 
-<?php include("../modal/rack_settings_modal.php"); ?>
+  <?php include("../modal/rack_settings_modal.php"); ?>
 
-<!-- Make sure script paths are correct -->
-<script src="../script/rack_settings_modal.js"></script>
+  <!-- Make sure script paths are correct -->
+  <script src="../script/rack_settings_modal.js"></script>
 
-<script>
+  <script>
 $(function() {
   // Settings form
   $.get('get_config.php', function(data) {
@@ -574,22 +615,47 @@ $(function() {
   }
 
   function refreshWarnings() {
-    $.get('fetch_warnings.php', function(data) {
-      $('#warningsTable').DataTable().clear().destroy();
-      $('#warningTableBody').html(data);
-      $('#warningsTable').DataTable({
-        "searching": true,
-        "paging": true,
-        "pageLength": 5,
-        "lengthMenu": [5, 10, 20]
-      });
+    console.log("Refreshing warnings table...");
+    $.ajax({
+      url: 'fetch_warnings.php',
+      type: 'GET',
+      dataType: 'html',
+      success: function(data) {
+        console.log("Warnings data received");
+        // Before destroying the table, check if it exists and is initialized
+        if ($.fn.DataTable.isDataTable('#warningsTable')) {
+          $('#warningsTable').DataTable().clear().destroy();
+        }
+        
+        $('#warningTableBody').html(data);
+        
+        if ($('#warningTableBody tr').length === 0) {
+          console.log("No warnings found, adding empty message");
+          $('#warningTableBody').html('<tr><td colspan="5" class="text-center">No unrecognized weight warnings found</td></tr>');
+        }
+        
+        $('#warningsTable').DataTable({
+          "searching": true,
+          "paging": true,
+          "pageLength": 5,
+          "lengthMenu": [5, 10, 20],
+          "order": [[0, "desc"]] // Order by ID column descending (most recent first)
+        });
+      },
+      error: function(xhr, status, error) {
+        console.error("Error fetching warnings:", error);
+        console.log("Status:", status);
+        console.log("Response:", xhr.responseText);
+        $('#warningTableBody').html('<tr><td colspan="5" class="text-center text-danger">Error loading warnings: ' + error + '</td></tr>');
+      }
     });
   }
 
   // Initial refresh and set intervals
   refreshDisplay();
+  refreshWarnings(); // Call this immediately
   setInterval(refreshDisplay, chartUpdateInterval);
-  setInterval(refreshWarnings, 15000); // Reduced from 10s to 15s
+  setInterval(refreshWarnings, 15000); // Every 15 seconds
 
   // Download CSV
   window.downloadCSV = function() {
@@ -628,6 +694,18 @@ $(function() {
     weightChart.update();
     itemChart.update();
   }
+  
+  // Add simulation button functionality
+  $('#simulateUnrecognized').click(function() {
+    // Generate a random weight between 1.0 and 10.0
+    const randomWeight = (Math.random() * 9 + 1).toFixed(3);
+    
+    $.get('log_unrecognized.php', { weight: randomWeight }, function(data) {
+      console.log("Logged unrecognized weight:", data);
+      toastr.warning(`Simulated unrecognized weight: ${randomWeight}kg`);
+      refreshWarnings(); // Refresh the warnings table immediately
+    });
+  });
 });
 </script>
 </body>

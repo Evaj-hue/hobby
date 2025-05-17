@@ -1,1 +1,1 @@
-{"weight":0.41,"item_count":4,"specified_items":4,"unrecognized":1,"timestamp":"2025-05-18 02:09:18","success":true,"unrecognized_details":{"actual_weight":0.41,"closest_match_items":4,"expected_weight":0.4,"difference":0.009999999999999953},"debug":{"item_weight":0.1,"tolerance_percent":0.2,"server_time":"2025-05-17 20:09:43","from_cache":false}}
+{"weight":0.2,"item_count":2,"specified_items":2,"unrecognized":0,"timestamp":"2025-05-18 02:34:43","success":true,"debug":{"item_weight":0.1,"tolerance_percent":0.2,"server_time":"2025-05-17 21:38:11","from_cache":false}}
