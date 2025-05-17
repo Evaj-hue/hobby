@@ -1,16 +1,153 @@
+/* Global styles for doordb system */
 body {
-    font-family: Arial, sans-serif;
-    margin: 20px;
+    background-color: #f4f6f9;
+    font-family: 'Segoe UI', sans-serif;
+    margin-left: 200px; /* space for sidebar */
+    padding-top: 60px; /* Space for fixed navbar */
 }
+
+.main-content {
+    padding: 20px;
+    transition: margin-left 0.3s ease;
+}
+
+@media (max-width: 768px) {
+    body {
+        margin-left: 0;
+    }
+}
+
+/* Card Styling */
+.card {
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    margin-bottom: 20px;
+}
+
+.card-header {
+    background-color: #253529;
+    color: white;
+    border-top-left-radius: 8px;
+    border-top-right-radius: 8px;
+    padding: 15px 20px;
+}
+
+/* Button Styling */
+.btn-primary {
+    background-color: #253529;
+    border-color: #253529;
+}
+
+.btn-primary:hover {
+    background-color: #1a2720;
+    border-color: #1a2720;
+}
+
+/* RFID Tag Styling */
+.rfid-tag {
+    font-family: monospace;
+    background-color: #f8f9fa;
+    padding: 2px 5px;
+    border-radius: 3px;
+    border: 1px solid #dee2e6;
+    letter-spacing: 1px;
+}
+
+.rfid-input {
+    font-family: monospace;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+}
+
+/* Table Styling */
 table {
     width: 100%;
     border-collapse: collapse;
 }
+
 th, td {
     border: 1px solid black;
     padding: 8px;
     text-align: left;
 }
+
 th {
     background-color: #f2f2f2;
+}
+
+.table-responsive {
+    overflow-x: auto;
+}
+
+.table-striped tbody tr:nth-of-type(odd) {
+    background-color: rgba(0, 0, 0, 0.02);
+}
+
+.table-hover tbody tr:hover {
+    background-color: rgba(0, 0, 0, 0.04);
+}
+
+/* Status badge styling */
+.badge {
+    padding: 6px 10px;
+    font-weight: 500;
+    font-size: 0.8rem;
+}
+
+/* Custom dashboard widgets */
+.stats-widget {
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+    margin-bottom: 30px;
+}
+
+.stat-card {
+    flex: 1;
+    min-width: 200px;
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+    text-align: center;
+}
+
+.stat-number {
+    font-size: 2.5rem;
+    font-weight: bold;
+    margin: 10px 0;
+}
+
+.stat-label {
+    color: #6c757d;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-size: 0.9rem;
+}
+
+/* Back button styling */
+.btn-outline-light {
+    background-color: rgba(255, 255, 255, 0.2) !important;
+}
+
+.btn-outline-light:hover {
+    background-color: rgba(255, 255, 255, 0.4) !important;
+}
+
+.back-btn {
+    color: white;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    padding: 5px 15px;
+    border: 1px solid white;
+    border-radius: 4px;
+    transition: all 0.2s;
+    background-color: rgba(255, 255, 255, 0.2);
+}
+
+.back-btn:hover {
+    background-color: rgba(255, 255, 255, 0.4);
+    color: white;
 }

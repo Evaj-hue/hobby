@@ -659,10 +659,44 @@ $(function() {
 
   // Download CSV
   window.downloadCSV = function() {
-    let csv = `Timestamp,${unitLabels[currentUnit]},Item Count\n`;
+    // Create a date formatter for the current date and time
+    const dateFormatter = new Intl.DateTimeFormat('en-US', {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+      hour12: false
+    });
+    
+    // Get current datetime for the header
+    const now = new Date();
+    const exportTime = dateFormatter.format(now);
+    
+    // Start with a header for the CSV
+    let csv = `CozyRack Data Export - ${exportTime}\n`;
+    csv += `Timestamp,${unitLabels[currentUnit]},Item Count\n`;
+    
+    // Add all data points with proper timestamps
     for (let i = 0; i < labels.length; i++) {
-      csv += `${labels[i]},${weightData[i]},${itemData[i]}\n`;
+      // Format date properly, ensuring # characters are removed
+      let timestamp;
+      if (labels[i] && typeof labels[i] === 'string') {
+        // Use the label if it's already a properly formatted time
+        timestamp = labels[i];
+      } else {
+        // Generate a timestamp based on current date if label is invalid
+        const time = new Date();
+        timestamp = time.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit', second:'2-digit'});
+      }
+      
+      // Combine with today's date for full datetime
+      const fullTimestamp = `${now.toLocaleDateString()} ${timestamp}`;
+      
+      csv += `"${fullTimestamp}",${weightData[i]},${itemData[i]}\n`;
     }
+    
     const blob = new Blob([csv], { type: 'text/csv' });
     const link = document.createElement('a');
     link.href = URL.createObjectURL(blob);

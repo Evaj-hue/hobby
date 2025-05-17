@@ -46,45 +46,129 @@ $conn->close();
 <head>
     <meta charset="UTF-8">
     <title>Register New RFID User</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-</head>
-<body class="bg-gray-100 p-6">
-    <div class="max-w-md mx-auto bg-white p-6 rounded-lg shadow-md">
-        <h2 class="text-2xl font-bold mb-4 text-center">Register RFID User</h2>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            background-color: #f4f6f9;
+            font-family: 'Segoe UI', sans-serif;
+            margin-left: 200px; /* space for sidebar */
+            padding-top: 60px; /* Space for fixed navbar */
+        }
         
-        <?php if ($message): ?>
-            <div class="mb-4 p-3 rounded bg-blue-100 text-blue-800 text-center">
-                <?= $message ?>
-            </div>
-        <?php endif; ?>
+        .main-content {
+            padding: 20px;
+            transition: margin-left 0.3s ease;
+        }
+        
+        @media (max-width: 768px) {
+            body {
+                margin-left: 0;
+            }
+        }
+        
+        .card-header {
+            background-color: #253529;
+            color: white;
+        }
+        
+        .btn-primary {
+            background-color: #253529;
+            border-color: #253529;
+        }
+        
+        .btn-primary:hover {
+            background-color: #1a2720;
+            border-color: #1a2720;
+        }
+        
+        /* RFID display style */
+        .rfid-input {
+            font-family: monospace;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+    </style>
+</head>
+<body>
+    <?php include("../partials/navbar.php"); ?>
+    <?php include("../partials/sidebar.php"); ?>
+    
+    <div class="main-content">
+        <div class="container mt-4">
+            <div class="row justify-content-center">
+                <div class="col-md-8 col-lg-6">
+                    <div class="card shadow">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <h2 class="mb-0">Register RFID User</h2>
+                            <a href="index.php" class="btn btn-outline-light btn-sm" style="background-color: rgba(255, 255, 255, 0.2);">
+                                <i class="fas fa-arrow-left"></i> Back to Dashboard
+                            </a>
+                        </div>
+                        <div class="card-body">
+                            <?php if ($message): ?>
+                                <div class="alert <?= strpos($message, "successfully") !== false ? 'alert-success' : 'alert-danger' ?> alert-dismissible fade show" role="alert">
+                                    <?= $message ?>
+                                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                                </div>
+                            <?php endif; ?>
 
-        <form method="POST" class="space-y-4">
-            <div>
-                <label class="block font-medium">RFID Tag (Hex)</label>
-                <input type="text" name="rfid_tag" class="w-full border rounded px-3 py-2" required>
+                            <form method="POST">
+                                <div class="mb-3">
+                                    <label for="rfid_tag" class="form-label">RFID Tag (Hex)</label>
+                                    <input type="text" id="rfid_tag" name="rfid_tag" class="form-control rfid-input" required 
+                                           placeholder="e.g. 0XC4 0X66 0X27 0XDB">
+                                    <div class="form-text">Enter the RFID tag value in 0X format with spaces.</div>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="username" class="form-label">Username</label>
+                                    <input type="text" id="username" name="username" class="form-control" required>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="role" class="form-label">Role</label>
+                                    <select id="role" name="role" class="form-select" required>
+                                        <option value="admin">Admin</option>
+                                        <option value="barista">Barista</option>
+                                        <option value="staff">Staff</option>
+                                        <option value="guest">Guest</option>
+                                    </select>
+                                </div>
+                                
+                                <div class="d-grid">
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="fas fa-user-plus"></i> Register User
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
             </div>
-            <div>
-                <label class="block font-medium">Username</label>
-                <input type="text" name="username" class="w-full border rounded px-3 py-2" required>
-            </div>
-            <div>
-                <label class="block font-medium">Role</label>
-                <select name="role" class="w-full border rounded px-3 py-2" required>
-                    <option value="admin">Admin</option>
-                    <option value="barista">Barista</option>
-                    <option value="staff">Staff</option>
-                    
-                </select>
-            </div>
-            <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 w-full">
-                Register User
-            </button>
-        </form>
+        </div>
     </div>
-    <div class="mb-4">
-    <a href="index.php" class="bg-gray-500 text-white px-3 py-1 rounded hover:bg-gray-600">
-        ← Back to Dashboard
-    </a>
-</div>
+
+    <script>
+        // Remove automatic formatting for RFID input to prevent issues
+        document.getElementById('rfid_tag').addEventListener('input', function(e) {
+            // Only convert to uppercase, no other formatting
+            e.target.value = e.target.value.toUpperCase();
+        });
+        
+        // Initialize any Bootstrap components
+        document.addEventListener('DOMContentLoaded', function() {
+            // Auto-hide alerts after 5 seconds
+            setTimeout(function() {
+                var alertElements = document.querySelectorAll('.alert');
+                alertElements.forEach(function(alert) {
+                    var bsAlert = new bootstrap.Alert(alert);
+                    bsAlert.close();
+                });
+            }, 5000);
+        });
+    </script>
 </body>
 </html>
