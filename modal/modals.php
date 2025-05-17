@@ -71,6 +71,55 @@
     background-color: #5a6b58 !important;
 }
 
+/* Style for threshold dropdown items */
+.dropdown-menu-end .dropdown-item {
+    color: #333;
+    cursor: pointer;
+}
+    
+.dropdown-menu-end .dropdown-item:hover {
+    background-color: #4caf50;
+    color: white;
+}
+    
+/* Style for input groups */
+.input-group .btn-outline-secondary {
+    color: #fff;
+    border-color: #7a8c74;
+    background-color: #50624e;
+}
+    
+.input-group .btn-outline-secondary:hover {
+    background-color: #3d4f40;
+}
+    
+/* Style for the modals in dark theme */
+.modal-content {
+    background-color: #3d4f40;
+    color: white;
+}
+    
+.modal-header {
+    border-bottom: 1px solid #50624e;
+}
+    
+.modal-footer {
+    border-top: 1px solid #50624e;
+}
+    
+/* Style for form inputs in modals */
+.modal-content .form-control {
+    background-color: #253529;
+    color: white;
+    border: 1px solid #7a8c74;
+}
+    
+.modal-content .form-control:focus {
+    background-color: #253529;
+    color: white;
+    border-color: #4caf50;
+    box-shadow: 0 0 0 0.25rem rgba(76, 175, 80, 0.25);
+}
 </style>
 <!-- Add Product Modal -->
 <!-- Add Product Modal -->
@@ -120,6 +169,25 @@
                     <div class="mb-3">
                         <label for="units_in_stock" class="form-label">Units in Stock</label>
                         <input type="number" name="units_in_stock" id="units_in_stock" class="form-control" required min="1" max="50">
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="max_stock" class="form-label">Maximum Stock</label>
+                        <input type="number" name="max_stock" id="max_stock" class="form-control" required onchange="calculateThreshold('max_stock', 'stock_threshold')">
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="stock_threshold" class="form-label">Stock Threshold (Low Stock Alert)</label>
+                        <div class="input-group">
+                            <input type="number" name="stock_threshold" id="stock_threshold" class="form-control" required>
+                            <button class="btn btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">Auto Set</button>
+                            <ul class="dropdown-menu dropdown-menu-end">
+                                <li><a class="dropdown-item" href="#" onclick="setThresholdPercentage('max_stock', 'stock_threshold', 10); return false;">10% of Max</a></li>
+                                <li><a class="dropdown-item" href="#" onclick="setThresholdPercentage('max_stock', 'stock_threshold', 20); return false;">20% of Max</a></li>
+                                <li><a class="dropdown-item" href="#" onclick="setThresholdPercentage('max_stock', 'stock_threshold', 30); return false;">30% of Max</a></li>
+                                <li><a class="dropdown-item" href="#" onclick="setThresholdPercentage('max_stock', 'stock_threshold', 50); return false;">50% of Max</a></li>
+                            </ul>
+                        </div>
                     </div>
 
                     <div class="mb-3">
@@ -185,6 +253,25 @@
                     <div class="mb-3">
                         <label for="edit_units_in_stock" class="form-label">Units in Stock</label>
                         <input type="number" name="units_in_stock" id="edit_units_in_stock" class="form-control" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="edit_max_stock" class="form-label">Maximum Stock</label>
+                        <input type="number" name="max_stock" id="edit_max_stock" class="form-control" required onchange="calculateThreshold('edit_max_stock', 'edit_stock_threshold')">
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="edit_stock_threshold" class="form-label">Stock Threshold (Low Stock Alert)</label>
+                        <div class="input-group">
+                            <input type="number" name="stock_threshold" id="edit_stock_threshold" class="form-control" required>
+                            <button class="btn btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">Auto Set</button>
+                            <ul class="dropdown-menu dropdown-menu-end">
+                                <li><a class="dropdown-item" href="#" onclick="setThresholdPercentage('edit_max_stock', 'edit_stock_threshold', 10); return false;">10% of Max</a></li>
+                                <li><a class="dropdown-item" href="#" onclick="setThresholdPercentage('edit_max_stock', 'edit_stock_threshold', 20); return false;">20% of Max</a></li>
+                                <li><a class="dropdown-item" href="#" onclick="setThresholdPercentage('edit_max_stock', 'edit_stock_threshold', 30); return false;">30% of Max</a></li>
+                                <li><a class="dropdown-item" href="#" onclick="setThresholdPercentage('edit_max_stock', 'edit_stock_threshold', 50); return false;">50% of Max</a></li>
+                            </ul>
+                        </div>
                     </div>
 
                     <div class="mb-3">
@@ -424,13 +511,21 @@
                         <input type="number" name="stock_quantity" id="stock_quantity" class="form-control" required>
                     </div>
                     <div class="mb-3">
-                        <label for="category" class="form-label">Category</label>
-                        <select name="category" id="category" class="form-select" required>
-                            <option value="Tote Bags">Tote Bags</option>
-                            <option value="Coffee Cups">Coffee Cups</option>
-                            <option value="Posters">Posters</option>
-                            <option value="Coasters">Coasters</option>
-                        </select>
+                        <label for="max_stock" class="form-label">Maximum Stock</label>
+                        <input type="number" name="max_stock" id="merch_max_stock" class="form-control" required onchange="calculateThreshold('merch_max_stock', 'merch_stock_threshold')">
+                    </div>
+                    <div class="mb-3">
+                        <label for="stock_threshold" class="form-label">Stock Threshold (Low Stock Alert)</label>
+                        <div class="input-group">
+                            <input type="number" name="stock_threshold" id="merch_stock_threshold" class="form-control" required>
+                            <button class="btn btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">Auto Set</button>
+                            <ul class="dropdown-menu dropdown-menu-end">
+                                <li><a class="dropdown-item" href="#" onclick="setThresholdPercentage('merch_max_stock', 'merch_stock_threshold', 10); return false;">10% of Max</a></li>
+                                <li><a class="dropdown-item" href="#" onclick="setThresholdPercentage('merch_max_stock', 'merch_stock_threshold', 20); return false;">20% of Max</a></li>
+                                <li><a class="dropdown-item" href="#" onclick="setThresholdPercentage('merch_max_stock', 'merch_stock_threshold', 30); return false;">30% of Max</a></li>
+                                <li><a class="dropdown-item" href="#" onclick="setThresholdPercentage('merch_max_stock', 'merch_stock_threshold', 50); return false;">50% of Max</a></li>
+                            </ul>
+                        </div>
                     </div>
                     <div class="mb-3">
                         <label for="image" class="form-label">Product Image</label>
@@ -474,13 +569,21 @@
                         <input type="number" name="stock_quantity" id="edit_stock_quantity" class="form-control" required>
                     </div>
                     <div class="mb-3">
-                        <label for="edit_category" class="form-label">Category</label>
-                        <select name="category" id="edit_category" class="form-select" required>
-                            <option value="Tote Bags">Tote Bags</option>
-                            <option value="coffee Cups">Coffee Cups</option>
-                            <option value="posters">Posters</option>
-                            <option value="accesories">Accessories</option>
-                        </select>
+                        <label for="edit_max_stock" class="form-label">Maximum Stock</label>
+                        <input type="number" name="max_stock" id="edit_merch_max_stock" class="form-control" required onchange="calculateThreshold('edit_merch_max_stock', 'edit_merch_stock_threshold')">
+                    </div>
+                    <div class="mb-3">
+                        <label for="edit_stock_threshold" class="form-label">Stock Threshold (Low Stock Alert)</label>
+                        <div class="input-group">
+                            <input type="number" name="stock_threshold" id="edit_merch_stock_threshold" class="form-control" required>
+                            <button class="btn btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">Auto Set</button>
+                            <ul class="dropdown-menu dropdown-menu-end">
+                                <li><a class="dropdown-item" href="#" onclick="setThresholdPercentage('edit_merch_max_stock', 'edit_merch_stock_threshold', 10); return false;">10% of Max</a></li>
+                                <li><a class="dropdown-item" href="#" onclick="setThresholdPercentage('edit_merch_max_stock', 'edit_merch_stock_threshold', 20); return false;">20% of Max</a></li>
+                                <li><a class="dropdown-item" href="#" onclick="setThresholdPercentage('edit_merch_max_stock', 'edit_merch_stock_threshold', 30); return false;">30% of Max</a></li>
+                                <li><a class="dropdown-item" href="#" onclick="setThresholdPercentage('edit_merch_max_stock', 'edit_merch_stock_threshold', 50); return false;">50% of Max</a></li>
+                            </ul>
+                        </div>
                     </div>
                     <div class="mb-3">
                         <label for="edit_image" class="form-label">Product Image</label>
@@ -496,6 +599,30 @@
         </div>
     </div>
 </div>
+
+<!-- Add JavaScript for threshold calculation -->
+<script>
+    function setThresholdPercentage(maxStockId, thresholdId, percentage) {
+        const maxStockElement = document.getElementById(maxStockId);
+        const thresholdElement = document.getElementById(thresholdId);
+        
+        if (maxStockElement && thresholdElement) {
+            const maxStock = parseInt(maxStockElement.value);
+            if (!isNaN(maxStock) && maxStock > 0) {
+                // Calculate percentage of max stock and round to nearest integer
+                const threshold = Math.round((percentage / 100) * maxStock);
+                thresholdElement.value = threshold;
+            } else {
+                alert("Please enter a valid maximum stock value first.");
+            }
+        }
+    }
+
+    function calculateThreshold(maxStockId, thresholdId) {
+        // Default to 20% of max stock
+        setThresholdPercentage(maxStockId, thresholdId, 20);
+    }
+</script>
 
 
 
