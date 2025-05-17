@@ -128,8 +128,8 @@
   </style>
 </head>
 <body>
-  <?php include("../partials/navbar.php"); ?>
-  <?php include("../partials/sidebar.php"); ?> 
+  <?php include("../partials/user_navbar.php"); ?>
+  <?php include("../partials/user_sidebar.php"); ?> 
 
   <div class="view-only-badge">
     <i class="fas fa-eye"></i> View Only Mode

@@ -33,7 +33,7 @@
             </div>
         </div>
         
-        <a href="profile.php">Profile</a>
+        <a href="../admin/profile.php">Profile</a>
         <a href="../logout.php">Logout</a>
     </div>
 </div>
