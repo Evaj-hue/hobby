@@ -19,6 +19,21 @@ while ($row = mysqli_fetch_assoc($res)) {
     echo "<td>" . htmlspecialchars($row['date']) . "</td>";
     echo "<td>" . htmlspecialchars($row['item_count']) . "</td>";
     echo "<td>" . htmlspecialchars($row['operation']) . "</td>";
+    
+    // Add status column for unrecognized
+    echo "<td>";
+    if (isset($row['unrecognized']) && $row['unrecognized'] == 1) {
+        echo "<span class='badge bg-danger'>Unrecognized</span>";
+    } else {
+        echo "<span class='badge bg-success'>Recognized</span>";
+    }
+    echo "</td>";
+    
     echo "</tr>";
+}
+
+// If no results, show empty message
+if (mysqli_num_rows($res) == 0) {
+    echo "<tr><td colspan='7' class='text-center'>No weight changes recorded</td></tr>";
 }
 ?>

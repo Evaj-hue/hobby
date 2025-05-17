@@ -198,6 +198,7 @@
             <th>Date</th>
             <th>Item Count</th>
             <th>Operation</th>
+            <th>Status</th>
           </tr>
         </thead>
         <tbody>
@@ -234,8 +235,6 @@
       <div class="text-center">
         <a href="debug_data.php" target="_blank" class="btn btn-sm btn-info">Debug Database</a>
         <a href="getvalue.php" target="_blank" class="btn btn-sm btn-secondary">Test API Response</a>
-        <a href="debug_warnings.php" target="_blank" class="btn btn-sm btn-warning">Debug Warnings</a>
-        <button id="simulateUnrecognized" class="btn btn-sm btn-danger">Simulate Unrecognized Weight</button>
       </div>
     </div>
   </div>
@@ -244,6 +243,7 @@
 
   <!-- Make sure script paths are correct -->
   <script src="../script/rack_settings_modal.js"></script>
+  <script src="rack_notifications.js"></script>
 
   <script>
 $(function() {
@@ -518,6 +518,17 @@ $(function() {
           // Update widget values immediately - ALWAYS update these
           $('#weight').text(formattedWeight + ' ' + currentUnit);
           $('#items').text(itemCount);
+          $('#unrecognized').text(unrecognized);
+          $('#specifiedItems').text(specifiedItems);
+          
+          // Check if we should add a notification
+          if (lastItemCount !== itemCount || data.unrecognized === 1) {
+            try {
+              checkAndSendNotification(data, itemCount, lastItemCount);
+            } catch (e) {
+              console.error("Error sending notification:", e);
+            }
+          }
           
           // Enhanced unrecognized weight display
           if (data.unrecognized === 1) {
@@ -547,9 +558,7 @@ $(function() {
             $('.unrecognized-box').removeAttr('title');
           }
           
-          $('#specifiedItems').text(specifiedItems);
-          
-          // Update for chart display - now with better debugging
+          // Update for chart display
           const currentTime = new Date().getTime();
           const timeElapsed = currentTime - lastChartUpdate;
           const significantChange = Math.abs(baseWeight - lastWeight) > 0.05 || itemCount !== lastItemCount;
@@ -649,6 +658,64 @@ $(function() {
         $('#warningTableBody').html('<tr><td colspan="5" class="text-center text-danger">Error loading warnings: ' + error + '</td></tr>');
       }
     });
+  }
+
+  // Check for conditions to send notifications
+  function checkAndSendNotification(data, currentItemCount, previousItemCount) {
+    // Only proceed if addRackNotification function exists
+    if (typeof addRackNotification !== "function") {
+      console.warn("addRackNotification function not found. Notifications disabled.");
+      return;
+    }
+    
+    // Get item weight from form or use a default
+    const itemWeightInput = parseFloat($('#itemWeight').val() || 0.1);
+    
+    // Check for unrecognized weight
+    if (data.unrecognized === 1) {
+      // This creates a notification for unrecognized weight
+      const weight = parseFloat(data.weight || 0);
+      const formattedWeight = formatValue(weight, 'kg');
+      
+      let message = `Unrecognized weight detected: ${formattedWeight} kg`;
+      
+      // Add more details if available
+      if (data.unrecognized_details) {
+        const diff = formatValue(data.unrecognized_details.difference, 'kg');
+        message += ` (differs by ${diff} kg from expected weight)`;
+      }
+      
+      // Call the function from rack_notifications.js
+      addRackNotification('warning', message, 'unrecognized');
+    }
+    
+    // Check for item stock level changes
+    if (previousItemCount !== currentItemCount) {
+      // Determine if it's addition or removal
+      if (currentItemCount > previousItemCount) {
+        const added = currentItemCount - previousItemCount;
+        addRackNotification('info', `${added} item(s) added to the rack`, 'item_added');
+      } else if (currentItemCount < previousItemCount) {
+        const removed = previousItemCount - currentItemCount;
+        addRackNotification('info', `${removed} item(s) removed from the rack`, 'item_removed');
+      }
+      
+      // Check for low stock - using a simple 30% threshold of max capacity
+      // We estimate max capacity based on either specified items or current count
+      const maxCapacity = Math.max(data.specified_items || 0, currentItemCount) || 10;
+      const stockPercentage = (currentItemCount / maxCapacity) * 100;
+      
+      if (stockPercentage <= 30 && currentItemCount > 0) {
+        addRackNotification('low_stock', 
+          `Low stock alert: ${currentItemCount} items (${Math.round(stockPercentage)}% of capacity)`, 
+          'low_stock');
+      }
+      
+      // Check for empty rack
+      if (currentItemCount === 0 && previousItemCount > 0) {
+        addRackNotification('alert', 'Rack is now empty!', 'empty');
+      }
+    }
   }
 
   // Initial refresh and set intervals

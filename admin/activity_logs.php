@@ -31,6 +31,19 @@ $totalProductSql = "SELECT COUNT(*) as total FROM activity_log WHERE action LIKE
 $totalProductResult = $conn->query($totalProductSql);
 $totalProduct = $totalProductResult->fetch(PDO::FETCH_ASSOC)['total'];
 
+// Connect to idealcozydesign database to fetch rack data
+$rackDbConn = new mysqli("localhost", "root", "", "user_management");
+
+// Fetch total rack weight changes
+$totalWeightChangesSql = "SELECT COUNT(*) as total FROM weight_changes";
+$totalWeightChangesResult = $rackDbConn->query($totalWeightChangesSql);
+$totalWeightChanges = $totalWeightChangesResult->fetch_assoc()['total'];
+
+// Fetch total unrecognized weight warnings
+$totalWarningsSql = "SELECT COUNT(*) as total FROM weight_warnings";
+$totalWarningsResult = $rackDbConn->query($totalWarningsSql);
+$totalWarnings = $totalWarningsResult->fetch_assoc()['total'];
+
 // Fetch activity log from the database
 $sql = "SELECT id, username, action, details, created_at FROM activity_log ORDER BY created_at DESC";
 $result = $conn->query($sql);
@@ -41,6 +54,23 @@ $productSql = "SELECT id, action, details, created_at FROM activity_log WHERE ac
 
 $merchResult = $conn->query($merchSql);
 $productResult = $conn->query($productSql);
+
+// Fetch weight changes from rack database - FIX: Check if unrecognized column exists
+$checkColumnSql = "SHOW COLUMNS FROM weight_changes LIKE 'unrecognized'";
+$columnResult = $rackDbConn->query($checkColumnSql);
+$hasUnrecognizedColumn = $columnResult && $columnResult->num_rows > 0;
+
+// Adjust query based on column existence
+if ($hasUnrecognizedColumn) {
+    $weightChangesSql = "SELECT id, weight, time, date, item_count, operation, unrecognized FROM weight_changes ORDER BY id DESC LIMIT 50";
+} else {
+    $weightChangesSql = "SELECT id, weight, time, date, item_count, operation FROM weight_changes ORDER BY id DESC LIMIT 50";
+}
+$weightChangesResult = $rackDbConn->query($weightChangesSql);
+
+// Fetch unrecognized weight warnings from rack database
+$warningSql = "SELECT id, weight, message, time, date FROM weight_warnings ORDER BY created_at DESC LIMIT 50";
+$warningResult = $rackDbConn->query($warningSql);
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -115,6 +145,11 @@ $productResult = $conn->query($productSql);
             background-color: #5a6b58;
         }
 
+        /* Unrecognized weight warning row highlighting */
+        .unrecognized {
+            background-color: rgba(220, 53, 69, 0.3) !important;
+        }
+
         @media (max-width: 768px) {
             .content {
                 margin-left: 0;
@@ -142,7 +177,7 @@ $productResult = $conn->query($productSql);
         <div class="container my-4">
             <div class="row text-center">
                 <!-- Widget 1: Total Activity Logs -->
-                <div class="col-md-4">
+                <div class="col-md-3">
                     <div class="card bg-success text-white">
                         <div class="card-body">
                             <h5 class="card-title">Users Activity Logs</h5>
@@ -152,7 +187,7 @@ $productResult = $conn->query($productSql);
                 </div>
 
                 <!-- Widget 2: Merch Activity Logs -->
-                <div class="col-md-4">
+                <div class="col-md-3">
                     <div class="card bg-primary text-white">
                         <div class="card-body">
                             <h5 class="card-title">Merch Activity Logs</h5>
@@ -162,11 +197,21 @@ $productResult = $conn->query($productSql);
                 </div>
 
                 <!-- Widget 3: Product Activity Logs -->
-                <div class="col-md-4">
+                <div class="col-md-3">
                     <div class="card bg-warning text-dark">
                         <div class="card-body">
                             <h5 class="card-title">Product Activity Logs</h5>
                             <p class="card-text display-4"><?php echo $totalProduct; ?></p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Widget 4: Rack Activity Logs -->
+                <div class="col-md-3">
+                    <div class="card bg-info text-white">
+                        <div class="card-body">
+                            <h5 class="card-title">Rack Activities</h5>
+                            <p class="card-text display-4"><?php echo $totalWeightChanges; ?></p>
                         </div>
                     </div>
                 </div>
@@ -178,6 +223,8 @@ $productResult = $conn->query($productSql);
             <a href="#userActivityTable" title="Go to User Activity">👤 User Activity</a>
             <a href="#merchActivityLogTable" title="Go to Merch Activity">🛒 Merch</a>
             <a href="#productActivityLogTable" title="Go to Product Activity">📦 Product</a>
+            <a href="#weightChangesTable" title="Go to Weight Changes">⚖️ Weight Changes</a>
+            <a href="#warningsTable" title="Go to Unrecognized Weights">⚠️ Warnings</a>
         </div>
 
         <!-- User Activity Logs Table -->
@@ -255,6 +302,80 @@ $productResult = $conn->query($productSql);
                 <?php endwhile; ?>
             </tbody>
         </table>
+        
+        <hr class="my-5">
+        
+        <!-- Weight Changes History Table -->
+        <h3 class="text-center mb-4" id="weightChangesTable">Weight Changes History</h3>
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <a href="../rack/rack_dashboard.php" class="btn btn-info">Go to Rack Dashboard</a>
+            <div class="badge bg-danger p-2">Total Unrecognized Weights: <?php echo $totalWarnings; ?></div>
+        </div>
+        <table id="weightChangesHistoryTable" class="table table-bordered table-striped">
+            <thead class="table-dark">
+                <tr>
+                    <th>#</th>
+                    <th>Weight (kg)</th>
+                    <th>Time</th>
+                    <th>Date</th>
+                    <th>Item Count</th>
+                    <th>Operation</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                <?php 
+                $counter = 1;
+                while ($row = $weightChangesResult->fetch_assoc()): 
+                    // Check if unrecognized column exists in the result
+                    $unrecognized = isset($row['unrecognized']) ? $row['unrecognized'] : 0;
+                    $rowClass = $unrecognized ? ' class="unrecognized"' : '';
+                ?>
+                    <tr<?php echo $rowClass; ?>>
+                        <td><?php echo $counter++; ?></td>
+                        <td><?php echo number_format($row['weight'], 3); ?></td>
+                        <td><?php echo htmlspecialchars($row['time']); ?></td>
+                        <td><?php echo htmlspecialchars($row['date']); ?></td>
+                        <td><?php echo htmlspecialchars($row['item_count']); ?></td>
+                        <td><?php echo htmlspecialchars($row['operation']); ?></td>
+                        <td>
+                            <?php if ($unrecognized): ?>
+                                <span class="badge bg-danger">Unrecognized</span>
+                            <?php else: ?>
+                                <span class="badge bg-success">Recognized</span>
+                            <?php endif; ?>
+                        </td>
+                    </tr>
+                <?php endwhile; ?>
+            </tbody>
+        </table>
+
+        <hr class="my-5">
+        
+        <!-- Unrecognized Weight Warnings Table -->
+        <h3 class="text-center mb-4 text-danger" id="warningsTable">⚠️ Unrecognized Weight Warnings</h3>
+        <table id="unrecognizedWeightTable" class="table table-bordered table-striped">
+            <thead class="table-dark">
+                <tr>
+                    <th>ID</th>
+                    <th>Weight (kg)</th>
+                    <th>Message</th>
+                    <th>Time</th>
+                    <th>Date</th>
+                </tr>
+            </thead>
+            <tbody>
+                <?php while ($row = $warningResult->fetch_assoc()): ?>
+                    <tr class="unrecognized">
+                        <td><?php echo htmlspecialchars($row['id']); ?></td>
+                        <td class="font-weight-bold"><?php echo number_format($row['weight'], 3); ?></td>
+                        <td><?php echo $row['message']; ?></td>
+                        <td><?php echo htmlspecialchars($row['time']); ?></td>
+                        <td><?php echo htmlspecialchars($row['date']); ?></td>
+                    </tr>
+                <?php endwhile; ?>
+            </tbody>
+        </table>
     </div>
 
     <!-- Bootstrap JS -->
@@ -290,6 +411,27 @@ $productResult = $conn->query($productSql);
                 "info": true,
                 "lengthChange": true,
                 "pageLength": 10,
+            });
+            
+            // Initialize DataTables for Rack-related tables
+            $('#weightChangesHistoryTable').DataTable({
+                "paging": true,
+                "searching": true,
+                "ordering": true,
+                "info": true,
+                "lengthChange": true,
+                "pageLength": 10,
+                "order": [[0, "desc"]] // Default sort by ID descending
+            });
+            
+            $('#unrecognizedWeightTable').DataTable({
+                "paging": true,
+                "searching": true,
+                "ordering": true,
+                "info": true,
+                "lengthChange": true,
+                "pageLength": 10,
+                "order": [[0, "desc"]] // Default sort by ID descending
             });
         });
     </script>

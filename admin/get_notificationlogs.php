@@ -1,30 +1,53 @@
 <?php
-include '../includes/db.php';
-header('Content-Type: application/json');
+// Database connection
+$servername = "localhost";
+$username = "root";
+$password = "";
+$database = "user_management";
 
-// Simulate the last seen timestamp (in a real implementation, retrieve this from the database or session)
-$lastSeenTimestamp = isset($_GET['last_seen']) ? $_GET['last_seen'] : 0;
+// Create connection
+$conn = new mysqli($servername, $username, $password, $database);
 
-try {
-    $sql = "
-        SELECT id, action, details, UNIX_TIMESTAMP(created_at) AS timestamp
-        FROM activity_log
-        WHERE UNIX_TIMESTAMP(created_at) > :last_seen
-        ORDER BY created_at DESC
-    ";
-
-    $stmt = $conn->prepare($sql);
-    $stmt->bindValue(':last_seen', $lastSeenTimestamp, PDO::PARAM_INT);
-    $stmt->execute();
-
-    $logs = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-    if ($logs) {
-        echo json_encode($logs);
-    } else {
-        echo json_encode(["message" => "No new notifications."]);
-    }
-} catch (PDOException $e) {
-    echo json_encode(["error" => "Database error: " . $e->getMessage()]);
+// Check connection
+if ($conn->connect_error) {
+    die(json_encode(['error' => "Connection failed: " . $conn->connect_error]));
 }
+
+// Get last seen timestamp from request
+$lastSeen = isset($_GET['last_seen']) ? intval($_GET['last_seen']) : 0;
+
+// Check if table exists
+$tableCheckQuery = "SHOW TABLES LIKE 'activity_logs'";
+$tableCheckResult = $conn->query($tableCheckQuery);
+
+if ($tableCheckResult->num_rows == 0) {
+    echo json_encode(['message' => 'No notifications available']);
+    exit;
+}
+
+// Query to get unread notifications
+$query = "SELECT id, username, action, details, link, 
+          UNIX_TIMESTAMP(timestamp) as timestamp 
+          FROM activity_logs 
+          WHERE UNIX_TIMESTAMP(timestamp) > ? 
+          ORDER BY timestamp DESC 
+          LIMIT 10";
+
+$stmt = $conn->prepare($query);
+$stmt->bind_param("i", $lastSeen);
+$stmt->execute();
+$result = $stmt->get_result();
+
+if ($result->num_rows == 0) {
+    echo json_encode(['message' => 'No new notifications']);
+} else {
+    $notifications = [];
+    while ($row = $result->fetch_assoc()) {
+        $notifications[] = $row;
+    }
+    echo json_encode($notifications);
+}
+
+$stmt->close();
+$conn->close();
 ?>

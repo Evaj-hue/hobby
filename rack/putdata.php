@@ -57,9 +57,20 @@ if (abs($weightDiff) >= $minDetectableWeight) {
     $insertHistory = "INSERT INTO weight_changes (
         weight, status, time, date, item_count, operation, unrecognized
     ) VALUES (?, ?, ?, ?, ?, ?, ?)";
-    $stmt = $conn->prepare($insertHistory);
-    $stmt->bind_param("dsssisi", $weight, $status, $time, $date, $itemCountChange, $operation, $unrecognized);
-    $stmt->execute();
+    
+    // Check if prepared statement supports the expected parameters
+    if ($stmt = $conn->prepare($insertHistory)) {
+        $stmt->bind_param("dsssisi", $weight, $status, $time, $date, $itemCountChange, $operation, $unrecognized);
+        $stmt->execute();
+    } else {
+        // Fallback in case the unrecognized column doesn't exist
+        $insertHistoryFallback = "INSERT INTO weight_changes (
+            weight, status, time, date, item_count, operation
+        ) VALUES (?, ?, ?, ?, ?, ?)";
+        $stmt = $conn->prepare($insertHistoryFallback);
+        $stmt->bind_param("dsssis", $weight, $status, $time, $date, $itemCountChange, $operation);
+        $stmt->execute();
+    }
 
     // Insert new current weight into weight table
     $insertWeight = "INSERT INTO weight (weight, status, time, date)
