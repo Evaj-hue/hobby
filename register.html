@@ -15,11 +15,8 @@
             pattern="^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$" 
              title="Please enter a valid email address" required>
             <input type="text" name="full_name" placeholder="Full Name" required>
-            <div class="phone-input">
-                <label for="contact_number" class="country-code">+63</label> <!-- Styled country code -->
-                 <input type="text" name="contact_number" id="contact_number" placeholder="(PH) 0XXXXXXXXXX"
+            <input type="text" name="contact_number" id="contact_number" placeholder="(PH) 0XXXXXXXXXX"
                     pattern="^0\d{10}$" title="A valid Philippine number starts with 0 followed by 10 digits" required>
-            </div>
             <input type="password" name="password" id="password" placeholder="Password" 
                    pattern="(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[!@#$%^&*:;><,.?~`-]).{8,}" 
                    oninput="checkPasswordRequirements()" required>
