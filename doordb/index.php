@@ -13,9 +13,10 @@ if ($conn->connect_error) {
 $userCountResult = $conn->query("SELECT COUNT(*) as count FROM users");
 $userCount = $userCountResult->fetch_assoc()['count'];
 
-// Get access log summary
+// Get access log summary - improved query to count correctly
 $accessStatsQuery = "SELECT 
                     COUNT(*) as total_logs,
+                    COUNT(DISTINCT CASE WHEN status = 'granted' THEN rfid_tag END) as unique_granted_users,
                     SUM(CASE WHEN status = 'granted' THEN 1 ELSE 0 END) as granted_count,
                     SUM(CASE WHEN status = 'denied' THEN 1 ELSE 0 END) as denied_count,
                     COUNT(DISTINCT rfid_tag) as unique_tags
@@ -115,51 +116,11 @@ $recentUsers = $conn->query($recentUsersQuery);
     </style>
 </head>
 <body>
-    <?php include("../partials/navbar.php"); ?>
+    <?php include("../partials/user_navbar.php"); ?>
     <?php include("../partials/sidebar.php"); ?>
     
     <div class="main-content">
         <h1 class="dashboard-title">RFID Access Control Dashboard</h1>
-        
-        <!-- Stats Cards -->
-        <div class="row mb-4">
-            <div class="col-md-3">
-                <div class="card bg-white shadow stat-card">
-                    <div class="card-body text-center">
-                        <i class="fas fa-users stat-icon text-primary"></i>
-                        <div class="stat-number"><?= $userCount ?></div>
-                        <div class="stat-label">Registered Users</div>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-3">
-                <div class="card bg-white shadow stat-card">
-                    <div class="card-body text-center">
-                        <i class="fas fa-sign-in-alt stat-icon text-success"></i>
-                        <div class="stat-number"><?= $accessStats['granted_count'] ?></div>
-                        <div class="stat-label">Access Granted</div>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-3">
-                <div class="card bg-white shadow stat-card">
-                    <div class="card-body text-center">
-                        <i class="fas fa-ban stat-icon text-danger"></i>
-                        <div class="stat-number"><?= $accessStats['denied_count'] ?></div>
-                        <div class="stat-label">Access Denied</div>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-3">
-                <div class="card bg-white shadow stat-card">
-                    <div class="card-body text-center">
-                        <i class="fas fa-id-card stat-icon text-warning"></i>
-                        <div class="stat-number"><?= $accessStats['unique_tags'] ?></div>
-                        <div class="stat-label">Unique RFID Tags</div>
-                    </div>
-                </div>
-            </div>
-        </div>
         
         <!-- Action Buttons -->
         <div class="row mb-4">
