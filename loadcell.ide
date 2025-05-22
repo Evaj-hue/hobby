@@ -1,0 +1,303 @@
+#include <Arduino.h>
+#include "HX711.h"
+#include <ESP8266WiFi.h>
+#include <WiFiClient.h>
+#include <ESP8266HTTPClient.h>
+#include <Wire.h>
+#include <LiquidCrystal_I2C.h>
+#include <ArduinoJson.h>
+
+// HX711 circuit wiring
+const int LOADCELL_DOUT_PIN = 12;
+const int LOADCELL_SCK_PIN = 13;
+
+HX711 scale;
+float reading;
+float lastReading = 0.0;
+
+// Configuration - will be updated dynamically
+float itemWeight = 0.5;  // Default item weight in kg
+float tolerancePercent = 2.0; // Default 2% tolerance
+unsigned long lastConfigUpdate = 0;
+const unsigned long CONFIG_UPDATE_INTERVAL = 60000; // Check for config updates every minute
+
+// Rack identification (IMPORTANT: each load cell needs a unique ID)
+const int RACK_ID = 1;  // Change this for each load cell/rack
+
+// Product information (will be updated from server)
+String productName = "Unknown Product";
+int productId = 0;
+int maxStock = 10;  // Default max stock
+int stockThreshold = 5; // Default low stock threshold
+
+// LCD Display
+LiquidCrystal_I2C lcd(0x27, 16, 2); // Set LCD address: 0x27, 16 columns, 2 rows
+
+// WiFi Credentials
+const char* ssid = "praise";
+const char* password = "pogisimikha";
+const char* serverIP = "192.168.84.200";
+const String configPath = "/idealcozydesign/rack/get_config.php";
+const String dataPath = "/idealcozydesign/rack/putdata.php";
+
+// Initialize WiFi and HTTP clients
+WiFiClient client;
+HTTPClient http;
+
+void setup() {
+  Serial.begin(115200);
+
+  // Initialize LCD
+  lcd.init();
+  lcd.backlight();
+  lcd.clear();
+  lcd.setCursor(0, 0);
+  lcd.print("Rack ID: ");
+  lcd.print(RACK_ID);
+  lcd.setCursor(0, 1);
+  lcd.print("Initializing...");
+
+  // Initialize Load Cell
+  Serial.println("Initializing the scale");
+  scale.begin(LOADCELL_DOUT_PIN, LOADCELL_SCK_PIN);
+  scale.set_scale(742.58); // Use default calibration initially
+  scale.tare();  // Reset scale to 0
+
+  Serial.println("Taring... Wait a moment.");
+  delay(2000);
+
+  // Connect to WiFi
+  WiFi.begin(ssid, password);
+  Serial.print("Connecting to WiFi");
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(1000);
+    Serial.print(".");
+  }
+  Serial.println("\nConnected to WiFi!");
+  lcd.clear();
+  lcd.setCursor(0, 0);
+  lcd.print("WiFi Connected!");
+  delay(1000);
+  
+  // Get initial configuration from server for this specific rack
+  updateConfigFromServer();
+}
+
+void updateConfigFromServer() {
+  if (WiFi.status() == WL_CONNECTED) {
+    // Include rack_id in the config request to get product-specific settings
+    String url = "http://" + String(serverIP) + configPath + "?rack_id=" + String(RACK_ID);
+    http.begin(client, url);
+    int httpResponseCode = http.GET();
+    
+    if (httpResponseCode > 0) {
+      String payload = http.getString();
+      Serial.println("Config response: " + payload);
+      
+      // Parse JSON response
+      DynamicJsonDocument doc(1024); // Increased size to handle more product info
+      DeserializationError error = deserializeJson(doc, payload);
+      
+      if (!error) {
+        // Update local values with server values
+        itemWeight = doc["item_weight"].as<float>();
+        tolerancePercent = doc["tolerance"].as<float>();
+        
+        // Get product information
+        if (doc.containsKey("product_name") && doc.containsKey("product_id")) {
+          productName = doc["product_name"].as<String>();
+          productId = doc["product_id"].as<int>();
+          
+          // Get stock monitoring parameters
+          if (doc.containsKey("max_stock")) {
+            maxStock = doc["max_stock"].as<int>();
+          }
+          
+          if (doc.containsKey("stock_threshold")) {
+            stockThreshold = doc["stock_threshold"].as<int>();
+          }
+          
+          Serial.println("Config updated - Product: " + productName + " (ID: " + String(productId) + ")");
+          Serial.println("Item weight: " + String(itemWeight) + "kg, Tolerance: " + String(tolerancePercent) + "%");
+          Serial.println("Max stock: " + String(maxStock) + ", Threshold: " + String(stockThreshold));
+                      
+          lcd.clear();
+          lcd.setCursor(0, 0);
+          // Truncate long product names
+          if (productName.length() > 16) {
+            lcd.print(productName.substring(0, 13) + "...");
+          } else {
+            lcd.print(productName);
+          }
+          lcd.setCursor(0, 1);
+          lcd.print("W:" + String(itemWeight) + " T:" + String(tolerancePercent) + "%");
+        } else {
+          lcd.clear();
+          lcd.setCursor(0, 0);
+          lcd.print("Config updated!");
+          lcd.setCursor(0, 1);
+          lcd.print("W:" + String(itemWeight) + " T:" + String(tolerancePercent) + "%");
+        }
+        delay(2000);
+      } else {
+        Serial.println("Failed to parse config JSON");
+      }
+    } else {
+      Serial.println("Error getting config: " + String(httpResponseCode));
+    }
+    http.end();
+  }
+}
+
+// Find the best matching item count based on weight
+int findBestItemCount(float weightInKg) {
+  // If weight is practically zero, return 0
+  if (weightInKg < (itemWeight * 0.01)) {
+    return 0;
+  }
+  
+  // Try to find the best matching count of items within tolerance
+  int maxItemsToCheck = ceil(weightInKg / itemWeight) + 1;
+  bool recognized = false;
+  int bestMatch = 0;
+  
+  for (int i = 1; i <= maxItemsToCheck; i++) {
+    float expectedWeight = i * itemWeight;
+    float tolerance = (expectedWeight * tolerancePercent / 100.0); // Calculate tolerance as percentage
+    
+    if (abs(weightInKg - expectedWeight) <= tolerance) {
+      bestMatch = i;
+      recognized = true;
+      break;
+    }
+  }
+  
+  // If no match found, calculate the closest match
+  if (!recognized) {
+    bestMatch = round(weightInKg / itemWeight);
+  }
+  
+  return bestMatch;
+}
+
+void loop() {
+  // Check if it's time to update configuration
+  unsigned long currentMillis = millis();
+  if (currentMillis - lastConfigUpdate >= CONFIG_UPDATE_INTERVAL) {
+    updateConfigFromServer();
+    lastConfigUpdate = currentMillis;
+  }
+  
+  if (scale.wait_ready_timeout(200)) {
+    reading = scale.get_units();
+    float weightInKg = reading / 1000.0; // Convert grams to kilograms
+    
+    // Get item count using percentage-based tolerance
+    int itemCount = findBestItemCount(weightInKg);
+
+    Serial.print("Weight: ");
+    Serial.print(weightInKg, 2);
+    Serial.println(" kg");
+
+    Serial.print("Item Count: ");
+    Serial.println(itemCount);
+
+    // Update LCD only if the reading changes
+    if (weightInKg != lastReading) {
+      lcd.clear();
+      lcd.setCursor(0, 0);
+      lcd.print("Weight: ");
+      lcd.print(weightInKg, 2);
+      lcd.print("kg");
+
+      lcd.setCursor(0, 1);
+      lcd.print("Items: ");
+      lcd.print(itemCount);
+
+      lastReading = weightInKg;
+    }
+
+    // Only send data if significant changes occur or enough time has passed
+    unsigned long currentTime = millis();
+    static unsigned long lastSendTime = 0;
+    static float lastSentWeight = 0.0;
+    
+    // Determine if there's a significant change (5% of an item weight or at least 0.01kg)
+    float minSignificantChange = max(0.01, itemWeight * 0.05);
+    bool significantChange = abs(weightInKg - lastSentWeight) >= minSignificantChange;
+    
+    // Also limit by time - don't send more often than every 3 seconds
+    bool timeToSend = (currentTime - lastSendTime) >= 3000;
+    
+    // Only send data if significant change OR if 10 seconds elapsed (keepalive)
+    if (significantChange || (timeToSend && (currentTime - lastSendTime) >= 10000)) {
+      if (WiFi.status() == WL_CONNECTED) {
+        // First check if server thinks update is needed
+        String checkUrl = "http://" + String(serverIP) + "/idealcozydesign/rack/check_update_needed.php?weight=" + String(weightInKg) + "&rack_id=" + String(RACK_ID);
+        http.begin(client, checkUrl);
+        
+        int checkResponseCode = http.GET();
+        bool updateNeeded = false;
+        
+        if (checkResponseCode > 0) {
+          String checkResponse = http.getString();
+          // Parse the response to see if update is needed
+          DynamicJsonDocument doc(256);
+          DeserializationError error = deserializeJson(doc, checkResponse);
+          
+          if (!error && doc.containsKey("update_needed")) {
+            updateNeeded = doc["update_needed"].as<int>() == 1;
+          }
+        }
+        http.end();
+        
+        // Only proceed with data update if needed
+        if (updateNeeded || significantChange) {
+          // Now send the actual weight data with rack_id, item_count, and product_id
+          String url = "http://" + String(serverIP) + dataPath + 
+                      "?weight=" + String(weightInKg) + 
+                      "&item_count=" + String(itemCount) + 
+                      "&rack_id=" + String(RACK_ID) + 
+                      "&product_id=" + String(productId) +
+                      "&status=1";
+                      
+          http.begin(client, url);
+          int httpResponseCode = http.GET();
+          
+          if (httpResponseCode > 0) {
+            Serial.println("Data sent: " + String(weightInKg) + "kg (change: " + 
+                          String(weightInKg - lastSentWeight) + "kg), Items: " + String(itemCount));
+            
+            // Update last sent values
+            lastSentWeight = weightInKg;
+            lastSendTime = currentTime;
+            
+            // Check if we need to display stock warnings
+            if (maxStock > 0 && itemCount > 0) {
+              int stockPercentage = (itemCount * 100) / maxStock;
+              
+              // Display stock level on LCD
+              lcd.setCursor(0, 1);
+              if (itemCount <= stockThreshold) {
+                lcd.print("LOW STOCK: " + String(itemCount) + "/" + String(maxStock));
+              } else {
+                lcd.print("Stock: " + String(itemCount) + "/" + String(maxStock));
+              }
+            }
+          } else {
+            Serial.println("Error on HTTP request: " + String(httpResponseCode));
+          }
+          http.end();
+        } else {
+          Serial.println("Update skipped - no significant change");
+        }
+      } else {
+        Serial.println("WiFi not connected");
+      }
+    }
+  } else {
+    Serial.println("HX711 not found.");
+  }
+
+  delay(1000);
+}

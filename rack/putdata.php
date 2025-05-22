@@ -1,111 +1,145 @@
 <?php
-include "config.php";
+// filepath: c:\xampp\htdocs\idealcozydesign\rack\putdata.php
 
-// Get input
+include "../includes/db.php";
+
+// Get input parameters
 $weight = isset($_GET['weight']) ? floatval($_GET['weight']) : 0.0;
-$status = isset($_GET['status']) ? $_GET['status'] : 'unknown';
+$itemCount = isset($_GET['item_count']) ? intval($_GET['item_count']) : 0;
+$rackId = isset($_GET['rack_id']) ? intval($_GET['rack_id']) : 0;
+$productId = isset($_GET['product_id']) ? intval($_GET['product_id']) : 0;
+$status = isset($_GET['status']) ? intval($_GET['status']) : 0;
 
+// For backward compatibility, migrate the old data to weight_history
 date_default_timezone_set("Asia/Manila");
-$date = date("Y-m-d");
-$time = date("H:i:s");
+$timestamp = date('Y-m-d H:i:s');
+$time = date('H:i:s');
+$date = date('Y-m-d');
 
-// Fetch dynamic configuration
-$configQuery = "SELECT item_weight, tolerance FROM config ORDER BY id DESC LIMIT 1";
-$configResult = mysqli_query($conn, $configQuery);
-if (!$configResult || mysqli_num_rows($configResult) == 0) {
-    $itemWeight = 0.5;
-    $tolerancePercent = 2.0; // Default 2% tolerance
-} else {
-    $config = mysqli_fetch_assoc($configResult);
-    $itemWeight = floatval($config['item_weight']);
-    $tolerancePercent = floatval($config['tolerance']); // Tolerance stored as percentage
-}
-
-// Get last recorded weight
-$lastWeightSql = "SELECT weight FROM weight ORDER BY created_at DESC LIMIT 1";
-$lastResult = mysqli_query($conn, $lastWeightSql);
-$lastWeight = 0.0;
-if ($lastResult && mysqli_num_rows($lastResult) > 0) {
-    $lastWeight = floatval(mysqli_fetch_assoc($lastResult)['weight']);
-}
-
-$weightDiff = $weight - $lastWeight;
-$minDetectableWeight = $itemWeight * 0.01; // 1% of item weight as minimum threshold
-
-if (abs($weightDiff) >= $minDetectableWeight) {
-    // Calculate item count change
-    $itemCountChange = round(abs($weightDiff) / $itemWeight);
-    $operation = ($weightDiff > 0) ? "added" : "removed";
-
-    // Check if the change is recognized
-    $unrecognized = 1; // Default to unrecognized
+// Record to the old tables for backwards compatibility
+try {
+    // First check if these tables exist
+    $checkOldTableSql = "SHOW TABLES LIKE 'weight_changes'";
+    $oldTableResult = $conn->query($checkOldTableSql);
+    $hasOldTable = $oldTableResult && $oldTableResult->rowCount() > 0;
     
-    // Multiple possible item counts to check
-    for ($i = 1; $i <= $itemCountChange + 1; $i++) {
-        $expectedChange = $i * $itemWeight;
-        $tolerance = ($expectedChange * $tolerancePercent / 100); // Percentage-based tolerance
+    if ($hasOldTable) {
+        // Check if unrecognized column exists in weight_changes
+        $checkColumnSql = "SHOW COLUMNS FROM weight_changes LIKE 'unrecognized'";
+        $columnResult = $conn->query($checkColumnSql);
+        $hasUnrecognizedColumn = $columnResult && $columnResult->rowCount() > 0;
         
-        if (abs(abs($weightDiff) - $expectedChange) <= $tolerance) {
-            // This number of items matches the weight change within tolerance
-            $itemCountChange = $i;
-            $unrecognized = 0;
-            break;
+        // Insert into weight_changes with appropriate columns
+        if ($hasUnrecognizedColumn) {
+            $oldInsertSql = "INSERT INTO weight_changes (weight, time, date, item_count, operation, unrecognized) 
+                             VALUES (:weight, :time, :date, :item_count, 'measurement', 0)";
+        } else {
+            $oldInsertSql = "INSERT INTO weight_changes (weight, time, date, item_count, operation) 
+                             VALUES (:weight, :time, :date, :item_count, 'measurement')";
+        }
+        
+        $oldStmt = $conn->prepare($oldInsertSql);
+        $oldStmt->bindParam(':weight', $weight, PDO::PARAM_STR);
+        $oldStmt->bindParam(':time', $time, PDO::PARAM_STR);
+        $oldStmt->bindParam(':date', $date, PDO::PARAM_STR);
+        $oldStmt->bindParam(':item_count', $itemCount, PDO::PARAM_INT);
+        $oldStmt->execute();
+    }
+} catch (Exception $e) {
+    // Log the error but continue - don't stop execution for backwards compatibility issues
+    error_log("Error with legacy tables: " . $e->getMessage());
+}
+
+// Record the weight measurement in our new system
+try {
+    // Insert into weight_history
+    $insertWeight = "INSERT INTO weight_history (rack_id, product_id, weight, item_count, created_at) 
+                    VALUES (:rack_id, :product_id, :weight, :item_count, :timestamp)";
+    $insertStmt = $conn->prepare($insertWeight);
+    $insertStmt->bindParam(':rack_id', $rackId, PDO::PARAM_INT);
+    $insertStmt->bindParam(':product_id', $productId, PDO::PARAM_INT);
+    $insertStmt->bindParam(':weight', $weight, PDO::PARAM_STR);
+    $insertStmt->bindParam(':item_count', $itemCount, PDO::PARAM_INT);
+    $insertStmt->bindParam(':timestamp', $timestamp, PDO::PARAM_STR);
+    $insertStmt->execute();
+
+    // Check if we need to create alerts based on product information
+    if ($productId > 0) {
+        // Get product info
+        $productSql = "SELECT p.*, rp.item_weight 
+                      FROM products p 
+                      JOIN rack_products rp ON p.id = rp.product_id 
+                      WHERE p.id = :product_id AND rp.rack_id = :rack_id AND rp.active = 1";
+        $productStmt = $conn->prepare($productSql);
+        $productStmt->bindParam(':product_id', $productId, PDO::PARAM_INT);
+        $productStmt->bindParam(':rack_id', $rackId, PDO::PARAM_INT);
+        $productStmt->execute();
+        
+        if ($productInfo = $productStmt->fetch(PDO::FETCH_ASSOC)) {
+            $maxStock = $productInfo['max_stock'];
+            $stockThreshold = $productInfo['stock_threshold'];
+            $productName = $productInfo['product_name'];
+            
+            // Check for stock level alerts
+            $alertType = null;
+            $alertMessage = "";
+            
+            if ($itemCount <= 0) {
+                $alertType = 'out_of_stock';
+                $alertMessage = "Product is out of stock! Please restock {$productName} in Rack #{$rackId}.";
+            } elseif ($itemCount <= $stockThreshold) {
+                $alertType = 'low_stock';
+                $alertMessage = "Low stock alert! Only {$itemCount} of {$productName} remaining in Rack #{$rackId}.";
+            } elseif ($maxStock > 0 && $itemCount > $maxStock) {
+                $alertType = 'overstocked';
+                $alertMessage = "Overstocked! {$itemCount} of {$productName} detected (max: {$maxStock}) in Rack #{$rackId}.";
+            }
+            
+            // Create alert if needed
+            if ($alertType) {
+                // Check if a similar unresolved alert exists
+                $checkAlertQuery = "SELECT id FROM inventory_alerts 
+                                  WHERE rack_id = :rack_id AND product_id = :product_id 
+                                  AND alert_type = :alert_type AND status != 'resolved'";
+                $checkAlertStmt = $conn->prepare($checkAlertQuery);
+                $checkAlertStmt->bindParam(':rack_id', $rackId, PDO::PARAM_INT);
+                $checkAlertStmt->bindParam(':product_id', $productId, PDO::PARAM_INT);
+                $checkAlertStmt->bindParam(':alert_type', $alertType, PDO::PARAM_STR);
+                $checkAlertStmt->execute();
+                
+                // Only create a new alert if one doesn't exist
+                if ($checkAlertStmt->rowCount() == 0) {
+                    $createAlertQuery = "INSERT INTO inventory_alerts 
+                                      (rack_id, product_id, alert_type, message, status, created_at) 
+                                      VALUES (:rack_id, :product_id, :alert_type, :message, 'new', :timestamp)";
+                    $createAlertStmt = $conn->prepare($createAlertQuery);
+                    $createAlertStmt->bindParam(':rack_id', $rackId, PDO::PARAM_INT);
+                    $createAlertStmt->bindParam(':product_id', $productId, PDO::PARAM_INT);
+                    $createAlertStmt->bindParam(':alert_type', $alertType, PDO::PARAM_STR);
+                    $createAlertStmt->bindParam(':message', $alertMessage, PDO::PARAM_STR);
+                    $createAlertStmt->bindParam(':timestamp', $timestamp, PDO::PARAM_STR);
+                    $createAlertStmt->execute();
+                }
+            }
         }
     }
 
-    // Insert into weight_changes (history)
-    $insertHistory = "INSERT INTO weight_changes (
-        weight, status, time, date, item_count, operation, unrecognized
-    ) VALUES (?, ?, ?, ?, ?, ?, ?)";
-    
-    // Check if prepared statement supports the expected parameters
-    if ($stmt = $conn->prepare($insertHistory)) {
-        $stmt->bind_param("dsssisi", $weight, $status, $time, $date, $itemCountChange, $operation, $unrecognized);
-        $stmt->execute();
-    } else {
-        // Fallback in case the unrecognized column doesn't exist
-        $insertHistoryFallback = "INSERT INTO weight_changes (
-            weight, status, time, date, item_count, operation
-        ) VALUES (?, ?, ?, ?, ?, ?)";
-        $stmt = $conn->prepare($insertHistoryFallback);
-        $stmt->bind_param("dsssis", $weight, $status, $time, $date, $itemCountChange, $operation);
-        $stmt->execute();
-    }
-
-    // Insert new current weight into weight table
-    $insertWeight = "INSERT INTO weight (weight, status, time, date)
-                     VALUES (?, ?, ?, ?)";
-    $stmt2 = $conn->prepare($insertWeight);
-    $stmt2->bind_param("dsss", $weight, $status, $time, $date);
-    $stmt2->execute();
-
-    // If unrecognized, log a warning
-    if ($unrecognized) {
-        // Changed: Show total weight instead of just the difference
-        $msg = "Unrecognized weight detected: " . number_format($weight, 3) . "kg";
-        
-        // Add additional context about expected weights
-        $closestMatch = round($weight / $itemWeight);
-        $expectedWeight = $closestMatch * $itemWeight;
-        $diff = $weight - $expectedWeight;
-        
-        if ($closestMatch > 0) {
-            $msg .= " (closest to " . $closestMatch . " item(s): " . number_format($expectedWeight, 3) . "kg, Δ: " . 
-                    number_format($diff, 3) . "kg)";
-        }
-        
-        $insertWarning = "INSERT INTO weight_warnings (weight, message, time, date)
-                          VALUES (?, ?, ?, ?)";
-        $stmt3 = $conn->prepare($insertWarning);
-        $stmt3->bind_param("dsss", $weight, $msg, $time, $date);
-        $stmt3->execute();
-        echo "Unrecognized weight detected: " . number_format($weight, 3) . "kg";
-    } else {
-        echo "Change recorded: $itemCountChange item(s) $operation";
-    }
-} else {
-    echo "No significant weight change detected.";
+    // Success response
+    $response = [
+        'success' => true,
+        'weight' => $weight,
+        'item_count' => $itemCount,
+        'timestamp' => $timestamp
+    ];
+} catch (Exception $e) {
+    // Error response
+    $response = [
+        'success' => false,
+        'error' => $e->getMessage()
+    ];
 }
 
-mysqli_close($conn);
+// Output response
+header('Content-Type: application/json');
+echo json_encode($response);
 ?>

@@ -211,7 +211,7 @@
     <div class="table-container">
       <div class="container">
         <div class="d-flex justify-content-between align-items-center mb-4">
-          <a href="all_warnings.php" class="btn btn-outline-danger">
+          <a href="../admin/activity_logs.php" class="btn btn-outline-danger">
             🔍 View All Warnings</a>
           <h4 class="text-center text-danger">⚠️ Unrecognized Weight Warnings</h4>
           <div></div> <!-- Spacer to keep title centered -->
